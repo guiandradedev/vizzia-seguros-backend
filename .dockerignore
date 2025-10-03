@@ -1,0 +1,13 @@
+# Dependências
+/node_modules
+/npm-debug.log
+/yarn-error.log
+
+# Build
+/dist
+/build
+
+# Variações de ambiente e cache
+.env
+.DS_Store
+*.log
