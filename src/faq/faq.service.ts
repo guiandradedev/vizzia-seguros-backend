@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Faq } from './entities/faq.entity';
 
 @Injectable()
 export class FaqService {
@@ -8,19 +11,27 @@ export class FaqService {
     return 'This action adds a new faq';
   }
 
-  findAll() {
-    return `This action returns all faq`;
+  findAllActives() : Promise<Faq>
+  {
+    return this.faqRepository.find({where: {isActive:true}, order: {createdAt: 'DESC'} });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} faq`;
+  async update(id: string, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
+    const faq = await this.faqRepository.preload({id, ...updateFaqDto})
+    if(!faq)
+    {
+      throw new NotFoundException(`Faq com ID "${id}" não encontrado.`)
+    }
+    return this.faqRepository.save(faq);
   }
 
-  update(id: number, updateFaqDto: UpdateFaqDto) {
-    return `This action updates a #${id} faq`;
-  }
+  async remove(id: string)  : Promise<void> {
+    const faq = await this.faqRepository.delete(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} faq`;
+    if(!faq){
+      throw new NotFoundException('Id de faq não encontrado');
+    }
+
+    return this.faqRepository.delete(id);
   }
 }

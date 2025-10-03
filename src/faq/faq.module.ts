@@ -6,4 +6,8 @@ import { FaqController } from './faq.controller';
   controllers: [FaqController],
   providers: [FaqService],
 })
-export class FaqModule {}
+export class FaqModule {
+
+
+  
+}

@@ -14,20 +14,17 @@ export class FaqController {
 
   @Get()
   findAll() {
-    return this.faqService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.faqService.findOne(+id);
+    return this.faqService.findAllActives();
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateFaqDto: UpdateFaqDto) {
     return this.faqService.update(+id, updateFaqDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.faqService.remove(+id);
   }
