@@ -20,12 +20,12 @@ export class FaqController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateFaqDto: UpdateFaqDto) {
-    return this.faqService.update(+id, updateFaqDto);
+    return this.faqService.update(id, updateFaqDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
-    return this.faqService.remove(+id);
+    return this.faqService.remove(id);
   }
 }

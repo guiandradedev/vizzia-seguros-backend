@@ -7,11 +7,17 @@ import { Faq } from './entities/faq.entity';
 
 @Injectable()
 export class FaqService {
-  create(createFaqDto: CreateFaqDto) {
-    return 'This action adds a new faq';
+  constructor(
+    @InjectRepository(Faq)
+    private readonly faqRepository : Repository<Faq>,
+  ){}
+
+  create(createFaqDto: CreateFaqDto) : Promise<Faq> {
+    const faq = this.faqRepository.create(createFaqDto)
+    return this.faqRepository.save(faq);
   }
 
-  findAllActives() : Promise<Faq>
+  findAllActives() : Promise<Faq[]>
   {
     return this.faqRepository.find({where: {isActive:true}, order: {createdAt: 'DESC'} });
   }
@@ -22,6 +28,7 @@ export class FaqService {
     {
       throw new NotFoundException(`Faq com ID "${id}" não encontrado.`)
     }
+
     return this.faqRepository.save(faq);
   }
 
