@@ -1,22 +1,22 @@
-import {Entity, PrimaryGeratedColum, Colum } from "typeorm"
+import {Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
 
 @Entity('faqs')
 export class Faq {
 
-    @PrimaryGeratedColum('uuid')
+    @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Colum({type: 'varchar', lenght: 255})
+    @Column({type: 'varchar', length: 255})
     question: string;
 
-    @Colum({type: 'text'})
+    @Column({type: 'text'})
     answer: string;
 
-    @Colum({type: 'boolean', default: true})
+    @Column({type: 'boolean', default: true})
     isActive: boolean;
 
-    @Colum({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+    @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     createdAt: Date;
 
 
