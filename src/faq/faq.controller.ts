@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes } from '@nestjs/common';
 import { FaqService } from './faq.service';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { UseGuards } from '@nestjs/common';
+import { ParseIntIdPipe } from 'src/common/pipes/pipe-int-id.pipe';
 
 @Controller('faq')
+@UsePipes(ParseIntIdPipe)
 export class FaqController {
   constructor(private readonly faqService: FaqService) {}
 
@@ -19,7 +21,7 @@ export class FaqController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFaqDto: UpdateFaqDto) {
+  update(@Param('id') id: number, @Body() updateFaqDto: UpdateFaqDto) {
     return this.faqService.update(id, updateFaqDto);
   }
 

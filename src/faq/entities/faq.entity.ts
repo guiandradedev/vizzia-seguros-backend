@@ -4,8 +4,8 @@ import {Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 @Entity('faqs')
 export class Faq {
 
-    @PrimaryGeneratedColumn('uuid')
-    id: string
+    @PrimaryGeneratedColumn()
+    id: number;
 
     @Column({type: 'varchar', length: 255})
     question: string;
@@ -19,7 +19,7 @@ export class Faq {
     @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     createdAt: Date;
 
-    @Column({type: `timestamp`, default: () => 'CURRENT_TIMESTANP'})
+    @Column({type: `timestamp`, default: () => 'CURRENT_TIMESTAMP'})
     updatedAt: Date;
 
 

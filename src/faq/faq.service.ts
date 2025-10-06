@@ -22,14 +22,22 @@ export class FaqService {
     return this.faqRepository.find({where: {isActive:true}, order: {createdAt: 'DESC'} });
   }
 
-  async update(id: string, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
-    const faq = await this.faqRepository.preload({id, ...updateFaqDto})
-    if(!faq)
-    {
-      throw new NotFoundException(`Faq com ID "${id}" não encontrado.`)
-    }
+  async update(id: number, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
 
-    return this.faqRepository.save(faq);
+    const faq = await this.faqRepository.findOneBy({id});
+
+    if (faq) {
+      faq.question = updateFaqDto?.question ?? faq.question;
+
+      faq.answer = updateFaqDto?.answer ?? faq.answer;
+      
+      await this.faqRepository.save(faq);
+
+      return faq;
+    }
+  
+    throw new NotFoundException(`Faq com ID "${id}" não encontrado.`)
+  
   }
 
   async remove(id: string)  : Promise<void> {
