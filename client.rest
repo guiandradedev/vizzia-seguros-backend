@@ -10,7 +10,7 @@ Content-Type: application/json
 {
     "question": "O que é considerado no cálculo do meu seguro?",
     "answer": "O preço é calculado com base no seu perfil de risco (idade, histórico de condução, localização), as características do bem segurado (modelo, ano) e as coberturas que você escolheu.",
-    "isActive": true
+    "isActive": false
 }
 
 
@@ -26,4 +26,4 @@ Content-Type: application/json
 
 
 ### find all
-GET {{baseUrl}}/faq/
+GET {{baseUrl}}/faq

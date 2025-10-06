@@ -17,9 +17,11 @@ export class FaqService {
     return this.faqRepository.save(faq);
   }
 
-  findAllActives() : Promise<Faq[]>
-  {
-    return this.faqRepository.find({where: {isActive:true}, order: {createdAt: 'DESC'} });
+  async findAll(isActive?: boolean): Promise<Faq[]> {
+    if (isActive !== undefined) {
+      return this.faqRepository.find({ where: { isActive } });
+    }
+    return this.faqRepository.find(); // retorna todos se isActive for undefined
   }
 
   async update(id: number, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
