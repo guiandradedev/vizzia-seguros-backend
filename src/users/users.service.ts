@@ -34,9 +34,12 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.userRepository.findOneBy({id});
 
-    if (user) return user;
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-    throw new NotFoundException('User not found');
+    const { passwordHash, ...result } = user;
+    return result;
   }
 
   async findByEmail(email: string) {
@@ -53,5 +56,9 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async me(id: number){
+    return await this.findOne(id);
   }
 }

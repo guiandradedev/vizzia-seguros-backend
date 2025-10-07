@@ -22,6 +22,7 @@ services:
       - db
     networks:
       - backend-network
+    user: "${UID}:${GID}"
 
   # Serviço do Banco de Dados (PostgreSQL)
   db:

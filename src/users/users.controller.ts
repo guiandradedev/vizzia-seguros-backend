@@ -3,10 +3,13 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
+import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import { TreeParent } from 'typeorm';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Post('create')
   create(@Body() createUserDto: CreateUserDto) {
@@ -19,18 +22,27 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get('findone/:id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(AuthTokenGuard)
+  @Patch()
+  update(
+    @Body() updateUserDto: UpdateUserDto,
+    @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
+  ) {
+    return this.usersService.update(tokenPayloadParam.id, updateUserDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
+  @UseGuards(AuthTokenGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @UseGuards(AuthTokenGuard)
+  @Get('/me')
+  me(
+    @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
+  ) {
+    console.log(tokenPayloadParam);
+    return this.usersService.me(tokenPayloadParam.id);
   }
 }
