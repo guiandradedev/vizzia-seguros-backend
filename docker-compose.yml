@@ -12,7 +12,7 @@ services:
       - .env
     # Mapeamento de portas (host:container)
     ports:
-      - '3000:3000' # Porta da aplicação
+      - '3001:3001' # Porta da aplicação
     # Monta volumes para hot-reload e persistência
     volumes:
       - .:/usr/src/app
