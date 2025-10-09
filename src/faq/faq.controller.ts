@@ -17,6 +17,7 @@ export class FaqController {
     return this.faqService.create(createFaqDto);
   }
 
+  @UseGuards(AuthTokenGuard)
   @Get()
   findAll() {
     return this.faqService.findAll();
