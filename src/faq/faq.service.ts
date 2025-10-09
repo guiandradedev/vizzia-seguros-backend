@@ -25,16 +25,16 @@ export class FaqService {
   }
 
   async update(id: number, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
-
     const faq = await this.faqRepository.findOneBy({id});
 
     if (faq) {
       faq.question = updateFaqDto?.question ?? faq.question;
 
       faq.answer = updateFaqDto?.answer ?? faq.answer;
+
+      faq.isActive = updateFaqDto?.isActive ?? faq.isActive;
       
       await this.faqRepository.save(faq);
-
       return faq;
     }
   
