@@ -33,6 +33,8 @@ export class FaqService {
       faq.answer = updateFaqDto?.answer ?? faq.answer;
 
       faq.isActive = updateFaqDto?.isActive ?? faq.isActive;
+
+      faq.category = updateFaqDto?.category ?? faq.category;
       
       await this.faqRepository.save(faq);
       return faq;

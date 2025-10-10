@@ -11,25 +11,25 @@ import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
 export class FaqController {
   constructor(private readonly faqService: FaqService) {}
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Post()
   create(@Body() createFaqDto: CreateFaqDto) {
     return this.faqService.create(createFaqDto);
   }
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Get()
   findAll() {
     return this.faqService.findAll();
   }
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateFaqDto: UpdateFaqDto) {
     return this.faqService.update(id, updateFaqDto);
   }
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.faqService.remove(id);
