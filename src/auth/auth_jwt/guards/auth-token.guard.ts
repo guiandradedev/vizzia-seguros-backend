@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import jwtConfig from '../config/jwt.config';
 import { REQUEST_TOKEN_PAYLOAD_KEY } from '../auth.constants';
+import { TokenTypes } from 'src/auth/enums/tokenTypes.enum';
 
 @Injectable()
 export class AuthTokenGuard implements CanActivate {
@@ -29,6 +30,9 @@ export class AuthTokenGuard implements CanActivate {
         token,
         this.jwtConfiguration
       );
+
+      if (payload.type !== TokenTypes.ACCESS)
+        throw new UnauthorizedException('Token invalido');
 
       request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
     }catch (error) {

@@ -2,10 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
-import { TokenPayloadParam } from 'src/auth/params/token-payload.param';
-import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
-import { TreeParent } from 'typeorm';
+import { TokenPayloadDto } from 'src/auth/auth_jwt/dto/token-payload.dto';
+import { AuthTokenGuard } from 'src/auth/auth_jwt/guards/auth-token.guard';
+import { TokenPayloadParam } from 'src/auth/auth_jwt/params/token-payload.param';
 
 @Controller('users')
 export class UsersController {

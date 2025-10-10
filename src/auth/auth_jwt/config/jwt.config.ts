@@ -7,5 +7,6 @@ export default registerAs('jwt', () => {
         issuer: process.env.JWT_ISSUER,
         ttl: Number(process.env.JWT_TTL) || 3600,
         refreshTtl: Number(process.env.JWT_REFRESH_TTL) || 86400,
+        createUserSocialTtl: Number(process.env.JWT_CREATE_USER_SOCIAL_TTL) || 600
     };
 });
