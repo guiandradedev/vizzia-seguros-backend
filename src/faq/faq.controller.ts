@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ParseBoolPipe, Query } from '@nestjs/common';
 import { FaqService } from './faq.service';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
@@ -19,8 +19,8 @@ export class FaqController {
 
   //@UseGuards(AuthTokenGuard)
   @Get()
-  findAll() {
-    return this.faqService.findAll();
+  findAll(@Query('isActive', new ParseBoolPipe({ optional: true })) isActive?: boolean) {
+    return this.faqService.findAll(isActive);
   }
 
   //@UseGuards(AuthTokenGuard)
