@@ -5,9 +5,8 @@ import { HashingServiceProtocol } from './hashing/hashing.service';
 import jwtConfig from './config/jwt.config';
 import { JwtService } from '@nestjs/jwt';
 import * as config from '@nestjs/config';
-import e from 'express';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { throwDeprecation } from 'process';
+import { TokenTypes } from '../enums/tokenTypes.enum';
 
 @Injectable()
 export class AuthService {
@@ -22,34 +21,36 @@ export class AuthService {
         console.log(this.jwtConfiguration);
     }
 
-    async login(loginDto: LoginDto){
+    async login(loginDto: LoginDto) {
         let passwordIsValid = false;
         let throwError = true;
 
         const user = await this.usersService.findByEmail(loginDto.email);
-        
-        if(user) {
+
+        if (user) {
             passwordIsValid = await this.hashingService.compare(loginDto.password, user.passwordHash);
         }
 
         if (passwordIsValid) throwError = false;
 
-        if(throwError) {
+        if (throwError) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        
+
         return this.generateToken(user.id);
     }
 
-    private async generateToken(userID: number){
+    async generateToken(userID: number) {
         const accestokenPromise = this.jwtsign(
-            userID,
-            this.jwtConfiguration.ttl
+            this.jwtConfiguration.ttl,
+            TokenTypes.ACCESS,
+            userID.toString(),
         );
 
         const refreshtokenPromise = this.jwtsign(
-            userID,
-            this.jwtConfiguration.refreshTtl
+            this.jwtConfiguration.refreshTtl,
+            TokenTypes.REFRESH,
+            userID.toString(),
         );
 
         const [accessToken, refreshToken] = await Promise.all([
@@ -63,10 +64,11 @@ export class AuthService {
         };
     }
 
-    private async jwtsign<T>(userID: number, expiresIn: number, payload?: T) {
+    private async jwtsign<T>(expiresIn: number, type: string ,userID?: string, payload?: T) {
         return this.jwtService.signAsync(
             {
                 sub: userID,
+                type: type,
                 ...payload
             },
             {
@@ -104,5 +106,22 @@ export class AuthService {
         }
 
         // Insert into blacklist
+    }
+
+    async createUserSocialToken(provider: string, id_provider: string, provider_email: string, name: string) {
+        const payload = {
+            provider,
+            provider_email,
+            name
+        };
+
+        const createUserSocialToken = await this.jwtsign(
+            this.jwtConfiguration.createUserSocialTtl,
+            TokenTypes.CREATEUSERSOCIAL,
+            id_provider,
+            payload,
+        );
+
+        return createUserSocialToken;
     }
 }

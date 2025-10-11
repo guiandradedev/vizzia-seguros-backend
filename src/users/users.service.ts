@@ -4,7 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { HashingServiceProtocol } from 'src/auth/hashing/hashing.service';
+import { HashingServiceProtocol } from 'src/auth/auth_jwt/hashing/hashing.service';
 
 @Injectable()
 export class UsersService {
@@ -59,6 +59,12 @@ export class UsersService {
   }
 
   async me(id: number){
-    return await this.findOne(id);
+    const user = await this.findOne(id); 
+    const vehicles = [];
+
+    return {
+      ...user,
+      vehicles,
+    };
   }
 }

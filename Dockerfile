@@ -1,6 +1,6 @@
 # --- STAGE 1: BUILD ---
 # Usa uma imagem Node maior para instalar dependências e construir o projeto
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 # Define o diretório de trabalho dentro do container
 WORKDIR /usr/src/app
@@ -19,7 +19,7 @@ RUN npm run build
 
 # --- STAGE 2: PRODUCTION/RUNTIME ---
 # Usa uma imagem Node menor (apenas para execução)
-FROM node:20-alpine AS production
+FROM node:20-slim AS production
 
 # Define o diretório de trabalho
 WORKDIR /usr/src/app

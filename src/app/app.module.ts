@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from 'src/auth/auth_jwt/auth.module';
 import { UsersModule } from 'src/users/users.module';
 import { FaqModule } from 'src/faq/faq.module';
+import { SocialAuthModule } from 'src/auth/social_auth/social_auth.module';
 
 @Module({
   imports: [
@@ -26,12 +27,13 @@ import { FaqModule } from 'src/faq/faq.module';
         entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Caminho corrigido para as entidades
         synchronize: true, // Em desenvolvimento, pode ser true. Em produção, use migrações.
         autoLoadEntities: true,
-        dropSchema: false,
+        // dropSchema: true,
       })
     }),
     AuthModule,
     UsersModule,
-    FaqModule
+    FaqModule,
+    SocialAuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
