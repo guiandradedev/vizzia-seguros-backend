@@ -9,7 +9,6 @@ import { CreateSocialUserDto } from './dto/create-user-social.dto';
 import { UsersService } from 'src/users/users.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { User } from 'src/users/entities/user.entity';
-import { SocialAuthValidateDto } from './dto/social_authValidate.dto';
 
 @Injectable()
 export class SocialAuthService {
@@ -36,7 +35,7 @@ export class SocialAuthService {
             email: userProviderData.email,
             nome: userProviderData.name,
             createusersocialtoken: await this.authService.createUserSocialToken(
-                socialAuthLoginDto.provider, 
+                socialAuthLoginDto.provider,
                 userProviderData.id_provider,
                 userProviderData.email,
                 userProviderData.name,
@@ -59,12 +58,11 @@ export class SocialAuthService {
 
         if (!userSocialAuth)
             return null;
-
+        1
         return userSocialAuth.userId;
     }
 
     async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
-        //token de criacao ja verificado e token do provider ja esta valido neste ponto
         const userData: CreateUserDto = {
             name: createUserSocialDto.name,
             email: createUserSocialDto.email,
@@ -73,16 +71,14 @@ export class SocialAuthService {
 
         const user = await this.usersService.create(userData);
 
-        const id_provider = createUserSocialDto.id_provider;
-
         await this.linkSocialAccount(
             user,
             createUserSocialDto.provider,
             createUserSocialDto.id_provider
-        )
+        );
     }
 
-    async linkAndValidate(socialAuthLoginDto: SocialAuthLoginDto, userInstance: number) {
+    async validateAndLink(socialAuthLoginDto: SocialAuthLoginDto, userInstance: number) {
         const userProviderData = await this.googleAuthProvider.validate(socialAuthLoginDto.token);
 
         if (!userProviderData) throw new BadRequestException('Provider invalido');
@@ -104,7 +100,6 @@ export class SocialAuthService {
 
         if (typeof userInstance === 'number')
             user = await this.usersService.findOne(userInstance);
-
         else
             user = userInstance;
 

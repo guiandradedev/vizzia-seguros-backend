@@ -5,6 +5,8 @@ import { Request } from 'express';
 import jwtConfig from '../config/jwt.config';
 import { REQUEST_TOKEN_PAYLOAD_KEY } from '../auth.constants';
 import { TokenTypes } from 'src/auth/enums/tokenTypes.enum';
+import { Reflector } from '@nestjs/core';
+import { ALLOWED_TOKEN_TYPES_KEY } from 'src/auth/decorators/allowed-token-types.decorator';
 
 @Injectable()
 export class AuthTokenGuard implements CanActivate {
@@ -12,6 +14,7 @@ export class AuthTokenGuard implements CanActivate {
     private readonly jwtservice: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof import('../config/jwt.config').default>,
+    private readonly reflector: Reflector
 
   ) {}
 
@@ -20,6 +23,10 @@ export class AuthTokenGuard implements CanActivate {
   ): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
+    const allowedTokenTypes = this.reflector.getAllAndOverride<TokenTypes[]>(ALLOWED_TOKEN_TYPES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]) ?? [TokenTypes.ACCESS];
 
     if (!token) {
       throw new UnauthorizedException('nao logado')
@@ -31,7 +38,7 @@ export class AuthTokenGuard implements CanActivate {
         this.jwtConfiguration
       );
 
-      if (payload.type !== TokenTypes.ACCESS)
+      if (!allowedTokenTypes.includes(payload.type))
         throw new UnauthorizedException('Token invalido');
 
       request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
