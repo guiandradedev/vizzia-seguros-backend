@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:3001
 
 
 # FAQ
@@ -27,14 +27,12 @@ Content-Type: application/json
 
 ### find all
 GET {{baseUrl}}/faq
-@baseUrl = "http://localhost:3000"
-@authToken = {{authenticate.response.body.accessToken}}
-@refreshToken = {{authenticate.response.body.refreshToken}}
+
 
 ### Create a new user
 
 POST {{baseUrl}}/users/create
-Authorization: {{authToken}}
+
 Content-Type: application/json
 
 {
