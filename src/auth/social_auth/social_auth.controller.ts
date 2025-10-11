@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { SocialAuthService } from './social_auth.service';
 import { SocialAuthLoginDto } from './dto/social_authLogin.dto';
 import { AuthTokenGuard } from '../auth_jwt/guards/auth-token.guard';
@@ -21,12 +21,14 @@ export class SocialAuthController {
 
     @AllowedTokenTypes(TokenTypes.CREATEUSERSOCIAL)
     @UseGuards(AuthTokenGuard)
+    @HttpCode(HttpStatus.CREATED)
     @Post('register')
     createUserAndLink(@Body() createUserSocialDto: CreateSocialUserDto){
         return this.socialAuthService.createUserAndLink(createUserSocialDto)
     };
 
     @UseGuards(AuthTokenGuard)
+    @HttpCode(HttpStatus.OK)
     @Post('link')
     validateAndLink(
         @Body() socialAuthLoginDto: SocialAuthLoginDto,

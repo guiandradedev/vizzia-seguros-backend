@@ -88,9 +88,14 @@ export class SocialAuthService {
                 id_provider: userProviderData.id_provider,
                 provider: socialAuthLoginDto.provider
             }
-        });
+        });        
 
-        if (social) throw new BadRequestException('Social account its already linked to other user');
+        if (social) {
+            if (social.userId.id === userInstance)
+                throw new BadRequestException('You are already linked to this account');
+
+            throw new BadRequestException('Social account its already linked to other user');
+        }
 
         return await this.linkSocialAccount(userInstance, socialAuthLoginDto.provider, userProviderData.id_provider);
     }
@@ -111,10 +116,6 @@ export class SocialAuthService {
 
         const relacao = this.userSocialAuthRepository.create(userLink);
         await this.userSocialAuthRepository.save(relacao);
-
-        return {
-            message: 'Link criado com sucesso'
-        };
     }
 }
 

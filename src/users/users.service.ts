@@ -59,6 +59,12 @@ export class UsersService {
   }
 
   async me(id: number){
-    return await this.findOne(id);
+    const user = await this.findOne(id); 
+    const vehicles = [];
+
+    return {
+      ...user,
+      vehicles,
+    };
   }
 }
