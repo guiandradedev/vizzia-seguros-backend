@@ -71,7 +71,7 @@ export class SocialAuthService {
 
         const user = await this.usersService.create(userData);
 
-        await this.linkSocialAccount(
+        return await this.linkSocialAccount(
             user,
             createUserSocialDto.provider,
             createUserSocialDto.id_provider
@@ -116,6 +116,8 @@ export class SocialAuthService {
 
         const relacao = this.userSocialAuthRepository.create(userLink);
         await this.userSocialAuthRepository.save(relacao);
+
+        return await this.authService.generateToken(user.id);
     }
 }
 

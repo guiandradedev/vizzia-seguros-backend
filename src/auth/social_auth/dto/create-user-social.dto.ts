@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEmail, isNotEmpty, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 
 export class CreateSocialUserDto extends CreateUserDto {
@@ -15,7 +15,7 @@ export class CreateSocialUserDto extends CreateUserDto {
     @IsNotEmpty()
     provider_email: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
     override passwordHash: string = "";
 }
