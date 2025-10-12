@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEmail, isNotEmpty, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { CreateUserDto } from "src/users/dto/create-user.dto";
 
 export class CreateSocialUserDto extends CreateUserDto {
