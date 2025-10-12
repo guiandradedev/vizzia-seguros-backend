@@ -19,19 +19,19 @@ export class UserCnhService {
     private readonly usersService: UsersService,
   ){}
 
-  async create(createUserCnhDto: CreateUserCnhDto, file: Express.Multer.File) {
-    const user = await this.usersService.findOne(createUserCnhDto.userId);
+  async create(createUserCnhDto: CreateUserCnhDto) {
+    // const user = await this.usersService.findOne(createUserCnhDto.userId);
 
-    const cnhImage = await this.cnhImageService.uploadAndSaveCnh(file, user.id);
+    // const cnhImage = await this.cnhImageService.uploadAndSaveCnh(file, user.id);
     
-    const userCnh = await this.userCnhRepository.create({
-      user: user,
-      cnh: cnhImage
-    });
+    // const userCnh = await this.userCnhRepository.create({
+    //   user: user,
+    //   cnh: cnhImage
+    // });
 
-    await this.userCnhRepository.insert(userCnh);
+    // await this.userCnhRepository.insert(userCnh);
 
-    return userCnh;
+    // return userCnh;
   }
 
   findAll() {

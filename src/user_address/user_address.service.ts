@@ -21,7 +21,7 @@ export class UserAddressService {
     @InjectRepository(UserAddress)
     private readonly userAddressRepository: Repository<UserAddress>,
     private readonly addressService: AddressService,
-    private readonly usersService: UsersService,
+    // private readonly usersService: UsersService,
   ){}
 
   async create(createUserAddressDto: CreateUserAddressDto) {

@@ -4,7 +4,7 @@ import { CreateUserCnhDto } from './dto/create-user_cnh.dto';
 import { UserCnhService } from './user_cnh.service';
 
 @Controller('user-cnh')
-export class UserAddressController {
+export class UserCnhController {
   constructor(private readonly userCnhService: UserCnhService) {}
 
   @Post()
