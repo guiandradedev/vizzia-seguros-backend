@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { HashingServiceProtocol } from './hashing/hashing.service';
 import { BcryptService } from './hashing/bcrypt.service';
@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 @Global()
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
   ],

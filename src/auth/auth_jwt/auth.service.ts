@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from 'src/users/users.service';
 import { HashingServiceProtocol } from './hashing/hashing.service';
@@ -12,6 +12,7 @@ import { TokenTypes } from '../enums/tokenTypes.enum';
 export class AuthService {
 
     constructor(
+        @Inject(forwardRef(() => UsersService))
         private readonly usersService: UsersService,
         private readonly hashingService: HashingServiceProtocol,
         @Inject(jwtConfig.KEY)

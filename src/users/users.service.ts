@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +13,7 @@ import { UserAddressService } from 'src/user_address/user_address.service';
 import { CreateUserAddressDto } from 'src/user_address/dto/create-user_address.dto';
 import { CreateUserTelephoneDto } from 'src/user_telephone/dto/create-user_telephone.dto';
 import 'multer';
+import { AuthService } from 'src/auth/auth_jwt/auth.service';
 
 @Injectable()
 export class UsersService {
@@ -24,7 +25,10 @@ export class UsersService {
     private readonly userTelephoneService: UserTelephoneService,
     private readonly userAddressService: UserAddressService,
 
-  ) {}
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
+
+  ) { }
 
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await this.hashingService.hash(createUserDto.passwordHash);
@@ -72,9 +76,12 @@ export class UsersService {
 
     await this.userTelephoneService.create(userTelephone);
 
-    const {passwordHash, ...result} = savedUser;
-  
-    return result
+    const tokens = await this.authService.generateToken(savedUser.id)
+
+    return {
+      savedUser,
+      tokens
+    }
   }
 
 
