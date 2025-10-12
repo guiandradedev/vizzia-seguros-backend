@@ -58,21 +58,19 @@ export class SocialAuthService {
 
         if (!userSocialAuth)
             return null;
-        1
+        
         return userSocialAuth.userId;
     }
 
     async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
         const userData: CreateUserDto = {
-            name: createUserSocialDto.name,
-            email: createUserSocialDto.email,
-            passwordHash: createUserSocialDto.passwordHash
-        };
+            ...createUserSocialDto
+        }
 
         const user = await this.usersService.create(userData);
 
         return await this.linkSocialAccount(
-            user,
+            user.id,
             createUserSocialDto.provider,
             createUserSocialDto.id_provider
         );
