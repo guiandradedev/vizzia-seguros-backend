@@ -23,12 +23,12 @@ class UserDto {
 
     @IsNotEmpty()
     @Transform(({ value }) => value.replace(/\D/g, ''))
-    // @IsCpf({ message: 'Informe um CPF válido' })
+    @IsCpf({ message: 'Informe um CPF válido' })
     cpf: string;
 
     @IsNotEmpty()
     @Transform(({ value }) => value.replace(/\D/g, ''))
-    // @IsCnh({ message: 'CNH inválida!' })
+    @IsCnh({ message: 'CNH inválida!' })
     cnhNumber: string;
 
     @IsNotEmpty()

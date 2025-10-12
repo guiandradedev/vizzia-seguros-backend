@@ -11,7 +11,7 @@ export class TelephoneService {
   constructor(
     @InjectRepository(Telephone)
     private readonly telephoneRepository: Repository<Telephone>,
-  ) {}
+  ) { }
 
   async create(createTelephoneDto: CreateTelephoneDto) {
     const telephone = this.telephoneRepository.create(createTelephoneDto);
@@ -26,24 +26,24 @@ export class TelephoneService {
   }
 
   async findOne(id: number) {
-    const telephone = await this.telephoneRepository.findOneBy({id});
+    const telephone = await this.telephoneRepository.findOneBy({ id });
 
     if (telephone)
       return telephone;
 
     throw new NotFoundException('Telephone not found');
   }
-
   async update(id: number, updateTelephoneDto: UpdateTelephoneDto) {
     const telephone = await this.findOne(id);
 
-    telephone.number = updateTelephoneDto.phone_number ?? telephone.number;
+    telephone.phone_number = updateTelephoneDto.phone_number ?? telephone.phone_number;
     telephone.type = updateTelephoneDto.type ?? telephone.type;
 
     await this.telephoneRepository.update(telephone.id, telephone);
 
     return telephone;
   }
+
 
   async remove(id: number) {
     const telephone = await this.findOne(id);
