@@ -58,21 +58,19 @@ export class SocialAuthService {
 
         if (!userSocialAuth)
             return null;
-        1
+        
         return userSocialAuth.userId;
     }
 
     async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
         const userData: CreateUserDto = {
-            name: createUserSocialDto.name,
-            email: createUserSocialDto.email,
-            passwordHash: createUserSocialDto.passwordHash
-        };
+            ...createUserSocialDto
+        }
 
         const user = await this.usersService.create(userData);
 
-        await this.linkSocialAccount(
-            user,
+        return await this.linkSocialAccount(
+            user.id,
             createUserSocialDto.provider,
             createUserSocialDto.id_provider
         );
@@ -116,6 +114,8 @@ export class SocialAuthService {
 
         const relacao = this.userSocialAuthRepository.create(userLink);
         await this.userSocialAuthRepository.save(relacao);
+
+        return await this.authService.generateToken(user.id);
     }
 }
 

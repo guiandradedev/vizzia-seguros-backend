@@ -4,7 +4,7 @@ import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { UseGuards } from '@nestjs/common';
 import { ParseIntIdPipe } from 'src/common/pipes/pipe-int-id.pipe';
-import { AuthTokenGuard } from 'src/auth/guards/auth-token.guard';
+import { AuthTokenGuard } from 'src/auth/auth_jwt/guards/auth-token.guard';
 
 @Controller('faq')
 @UsePipes(ParseIntIdPipe)

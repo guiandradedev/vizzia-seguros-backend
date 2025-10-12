@@ -7,6 +7,11 @@ import { AuthModule } from 'src/auth/auth_jwt/auth.module';
 import { UsersModule } from 'src/users/users.module';
 import { FaqModule } from 'src/faq/faq.module';
 import { SocialAuthModule } from 'src/auth/social_auth/social_auth.module';
+import { Telephone } from 'src/telephone/entities/telephone.entity';
+import { TelephoneModule } from 'src/telephone/telephone.module';
+import { UserTelephoneModule } from 'src/user_telephone/user_telephone.module';
+import { UserAddressModule } from 'src/user_address/user_address.module';
+import { AddressModule } from 'src/address/address.module';
 
 @Module({
   imports: [
@@ -27,13 +32,17 @@ import { SocialAuthModule } from 'src/auth/social_auth/social_auth.module';
         entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Caminho corrigido para as entidades
         synchronize: true, // Em desenvolvimento, pode ser true. Em produção, use migrações.
         autoLoadEntities: true,
-        // dropSchema: true,
+        dropSchema: true,
       })
     }),
     AuthModule,
     UsersModule,
+    UserAddressModule,
     FaqModule,
-    SocialAuthModule
+    SocialAuthModule,
+    TelephoneModule,
+    UserTelephoneModule,
+    AddressModule,
   ],
   controllers: [AppController],
   providers: [AppService],

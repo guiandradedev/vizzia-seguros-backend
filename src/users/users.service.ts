@@ -3,8 +3,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { HashingServiceProtocol } from 'src/auth/auth_jwt/hashing/hashing.service';
+import { async } from 'rxjs';
+import { Address } from 'src/address/entities/address.entity';
+import { Telephone } from 'src/telephone/entities/telephone.entity';
 
 @Injectable()
 export class UsersService {
@@ -12,27 +15,61 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly hashingService: HashingServiceProtocol,
-  ) {}
-  
-  async create(createUserDto: CreateUserDto) {
-    const passwordHash = this.hashingService.hash(createUserDto.passwordHash);
-    
-    const userdata= {
-      ...createUserDto,
-      passwordHash: await passwordHash
-    };
+    private readonly dataSource: DataSource,
+  ) { }
 
-    const user = this.userRepository.create(userdata);
-    await this.userRepository.save(user);
-    return user;
+  async create(createUserDto: CreateUserDto) {
+    const hashedPassword = await this.hashingService.hash(createUserDto.passwordHash);
+
+    return this.dataSource.transaction(async (manager) => {
+      const userPayload = {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        passwordHash: hashedPassword,
+        cnhNumber: createUserDto.cnhNumber,
+        birthDate: createUserDto.birthDate,
+        status: createUserDto.status,
+        cnhIssueDate: createUserDto.cnhIssueDate,
+        cpf: createUserDto.cpf,
+      };
+      const userEntity = manager.create(User, userPayload);
+      const savedUser = await manager.save(userEntity);
+
+      
+      const addressPayload = {
+        street: createUserDto.street,
+        neighborhood: createUserDto.neighborhood,
+        city: createUserDto.city,
+        addressNumber: createUserDto.addressNumber,
+        state: createUserDto.state,
+        cep: createUserDto.cep,
+        user: savedUser, // Vincula o endereço ao usuário recém-criado
+      };
+      console.log(addressPayload)
+      const addressEntity = manager.create(Address, addressPayload);
+      await manager.save(addressEntity);
+      
+      
+      const telephonePayload = {
+        number: createUserDto.phone_number,
+        type: createUserDto.type,
+        user: savedUser, // Vincula o telefone ao usuário
+      };
+      const telephoneEntity = manager.create(Telephone, telephonePayload);
+      await manager.save(telephoneEntity);
+
+      const { passwordHash, ...result } = savedUser;
+      return result;
+    });
   }
+
 
   findAll() {
     return `This action returns all users`;
   }
 
   async findOne(id: number) {
-    const user = await this.userRepository.findOneBy({id});
+    const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -42,8 +79,16 @@ export class UsersService {
     return result;
   }
 
+  private async findUserEntityById(id: number): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async findByEmail(email: string) {
-    const user = await this.userRepository.findOneBy({email});
+    const user = await this.userRepository.findOneBy({ email });
 
     if (user) return user;
 
@@ -58,8 +103,8 @@ export class UsersService {
     return `This action removes a #${id} user`;
   }
 
-  async me(id: number){
-    const user = await this.findOne(id); 
+  async me(id: number) {
+    const user = await this.findOne(id);
     const vehicles = [];
 
     return {
@@ -68,3 +113,4 @@ export class UsersService {
     };
   }
 }
+
