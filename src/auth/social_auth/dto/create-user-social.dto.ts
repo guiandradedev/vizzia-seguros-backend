@@ -15,7 +15,7 @@ export class CreateSocialUserDto extends CreateUserDto {
     @IsNotEmpty()
     provider_email: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
     override passwordHash: string = "";
 }

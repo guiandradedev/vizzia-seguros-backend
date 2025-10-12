@@ -5,8 +5,7 @@ import { CreateAddressDto } from 'src/address/dto/create-address.dto'
 
 export class CreateUserAddressDto {
     @IsNotEmpty()
-    @IsNumber()
-    userId: number;
+    userId: User;
 
     @IsNotEmpty()
     address: CreateAddressDto;

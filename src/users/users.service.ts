@@ -8,6 +8,11 @@ import { HashingServiceProtocol } from 'src/auth/auth_jwt/hashing/hashing.servic
 import { async } from 'rxjs';
 import { Address } from 'src/address/entities/address.entity';
 import { Telephone } from 'src/telephone/entities/telephone.entity';
+import { UserTelephoneService } from 'src/user_telephone/user_telephone.service';
+import { UserAddressService } from 'src/user_address/user_address.service';
+import { CreateUserAddressDto } from 'src/user_address/dto/create-user_address.dto';
+import { CreateUserTelephoneDto } from 'src/user_telephone/dto/create-user_telephone.dto';
+import 'multer';
 
 @Injectable()
 export class UsersService {
@@ -15,54 +20,65 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly hashingService: HashingServiceProtocol,
-    private readonly dataSource: DataSource,
-  ) { }
+
+    private readonly userTelephoneService: UserTelephoneService,
+    private readonly userAddressService: UserAddressService,
+
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await this.hashingService.hash(createUserDto.passwordHash);
 
-    return this.dataSource.transaction(async (manager) => {
-      const userPayload = {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        passwordHash: hashedPassword,
-        cnhNumber: createUserDto.cnhNumber,
-        birthDate: createUserDto.birthDate,
-        status: createUserDto.status,
-        cnhIssueDate: createUserDto.cnhIssueDate,
-        cpf: createUserDto.cpf,
-      };
-      const userEntity = manager.create(User, userPayload);
-      const savedUser = await manager.save(userEntity);
+    const userPayload = {
+      name: createUserDto.name,
+      email: createUserDto.email,
+      passwordHash: hashedPassword,
+      cnhNumber: createUserDto.cnhNumber,
+      birthDate: createUserDto.birthDate,
+      status: createUserDto.status,
+      cnhIssueDate: createUserDto.cnhIssueDate,
+      cpf: createUserDto.cpf,
+    };
 
-      
-      const addressPayload = {
-        street: createUserDto.street,
-        neighborhood: createUserDto.neighborhood,
-        city: createUserDto.city,
-        addressNumber: createUserDto.addressNumber,
-        state: createUserDto.state,
-        cep: createUserDto.cep,
-        user: savedUser, // Vincula o endereço ao usuário recém-criado
-      };
-      console.log(addressPayload)
-      const addressEntity = manager.create(Address, addressPayload);
-      await manager.save(addressEntity);
-      
-      
-      const telephonePayload = {
-        number: createUserDto.phone_number,
-        type: createUserDto.type,
-        user: savedUser, // Vincula o telefone ao usuário
-      };
-      const telephoneEntity = manager.create(Telephone, telephonePayload);
-      await manager.save(telephoneEntity);
+    const savedUser = this.userRepository.create(userPayload);
+    await this.userRepository.save(savedUser);
 
-      const { passwordHash, ...result } = savedUser;
-      return result;
-    });
+    const addressPayload = {
+      street: createUserDto.street,
+      neighborhood: createUserDto.neighborhood,
+      city: createUserDto.city,
+      addressNumber: createUserDto.addressNumber,
+      state: createUserDto.state,
+      cep: createUserDto.cep,
+      user: savedUser, // Vincula o endereço ao usuário recém-criado
+    };
+
+    const userAddress: CreateUserAddressDto = {
+      userId: savedUser,
+      address: addressPayload,
+    }
+
+    await this.userAddressService.create(userAddress);
+
+    const telephonePayload = {
+      phone_number: createUserDto.phone_number,
+      type: createUserDto.type,
+    };
+
+    const userTelephone: CreateUserTelephoneDto = {
+      userId: savedUser,
+      telephone: telephonePayload
+    };
+
+    await this.userTelephoneService.create(userTelephone);
+
+    const {passwordHash, ...result} = savedUser;
+  
+    return result
   }
 
+
+  // await this.userTelephoneService.create()
 
   findAll() {
     return `This action returns all users`;

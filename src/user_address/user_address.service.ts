@@ -25,12 +25,10 @@ export class UserAddressService {
   ){}
 
   async create(createUserAddressDto: CreateUserAddressDto) {
-    const user = await this.usersService.findOne(createUserAddressDto.userId);
-
     const address = await this.addressService.create(createUserAddressDto.address);
     
-    const userAddress = await this.userAddressRepository.create({
-      user: user,
+    const userAddress = this.userAddressRepository.create({
+      user: createUserAddressDto.userId,
       address: address
     });
 
