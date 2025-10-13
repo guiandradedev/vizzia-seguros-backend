@@ -1,5 +1,11 @@
 import {Entity, PrimaryGeneratedColumn, Column } from "typeorm"
 
+export enum Category {
+  PAGAMENTO = 'pagamento',
+  COBERTURA = 'cobertura',
+  ASSITENCIA = 'assistência',
+}
+
 
 @Entity('faqs')
 export class Faq {
@@ -22,7 +28,8 @@ export class Faq {
     @Column({type: `timestamp`, default: () => 'CURRENT_TIMESTAMP'})
     updatedAt: Date;
 
-
+    @Column({type: 'enum', enum: Category})
+    category: Category
 }
 
 

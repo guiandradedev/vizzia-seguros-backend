@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UsePipes, ParseBoolPipe, Query } from '@nestjs/common';
 import { FaqService } from './faq.service';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
@@ -11,25 +11,25 @@ import { AuthTokenGuard } from 'src/auth/auth_jwt/guards/auth-token.guard';
 export class FaqController {
   constructor(private readonly faqService: FaqService) {}
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Post()
   create(@Body() createFaqDto: CreateFaqDto) {
     return this.faqService.create(createFaqDto);
   }
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Get()
-  findAll() {
-    return this.faqService.findAll();
+  findAll(@Query('isActive', new ParseBoolPipe({ optional: true })) isActive?: boolean) {
+    return this.faqService.findAll(isActive);
   }
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Patch(':id')
   update(@Param('id') id: number, @Body() updateFaqDto: UpdateFaqDto) {
     return this.faqService.update(id, updateFaqDto);
   }
 
-  @UseGuards(AuthTokenGuard)
+  //@UseGuards(AuthTokenGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.faqService.remove(id);
