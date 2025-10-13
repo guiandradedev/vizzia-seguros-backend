@@ -4,7 +4,7 @@ import { UserAddressController } from './user_address.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserAddress } from './entities/user_address.entity';
 import { AddressModule } from 'src/address/address.module';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from 'src/user/users/users.module';
 
 @Module({
   imports: [

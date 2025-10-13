@@ -15,7 +15,7 @@ export class Telephone {
 
     @Column({length: 11, nullable: false})
     @IsNotEmpty()
-    number: string;
+    phone_number: string;
     
     @Column({
         type: 'enum',

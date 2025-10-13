@@ -4,7 +4,7 @@ import { SocialAuthService } from './social_auth.service';
 import { GoogleAuthProvider } from './providers/google_auth/google_auth';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserSocialAuth } from './entities/user_social_auth.entity';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from 'src/user/users/users.module';
 
 @Module({
   imports: [

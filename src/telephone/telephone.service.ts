@@ -14,6 +14,9 @@ export class TelephoneService {
   ) {}
 
   async create(createTelephoneDto: CreateTelephoneDto) {
+
+    console.log(createTelephoneDto)
+
     const telephone = this.telephoneRepository.create(createTelephoneDto);
 
     const telephoneEntity = await this.telephoneRepository.insert(telephone);
@@ -37,7 +40,7 @@ export class TelephoneService {
   async update(id: number, updateTelephoneDto: UpdateTelephoneDto) {
     const telephone = await this.findOne(id);
 
-    telephone.number = updateTelephoneDto.phone_number ?? telephone.number;
+    telephone.phone_number = updateTelephoneDto.phone_number ?? telephone.phone_number;
     telephone.type = updateTelephoneDto.type ?? telephone.type;
 
     await this.telephoneRepository.update(telephone.id, telephone);

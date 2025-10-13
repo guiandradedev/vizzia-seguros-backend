@@ -1,4 +1,4 @@
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/user/users/entities/user.entity";
 import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { CnhImage } from "src/cnh-image/entities/cnh-image.entity";
 

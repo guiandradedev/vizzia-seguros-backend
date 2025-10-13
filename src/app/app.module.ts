@@ -4,14 +4,16 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth_jwt/auth.module';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from 'src/user/users/users.module';
 import { FaqModule } from 'src/faq/faq.module';
 import { SocialAuthModule } from 'src/auth/social_auth/social_auth.module';
 import { Telephone } from 'src/telephone/entities/telephone.entity';
 import { TelephoneModule } from 'src/telephone/telephone.module';
-import { UserTelephoneModule } from 'src/user_telephone/user_telephone.module';
-import { UserAddressModule } from 'src/user_address/user_address.module';
+import { UserTelephoneModule } from 'src/user/user_telephone/user_telephone.module';
+import { UserAddressModule } from 'src/user/user_address/user_address.module';
 import { AddressModule } from 'src/address/address.module';
+import { VehicleModule } from 'src/vehicle/vehicle.module';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { AddressModule } from 'src/address/address.module';
     TelephoneModule,
     UserTelephoneModule,
     AddressModule,
+    VehicleModule,
+    FilesModule
   ],
   controllers: [AppController],
   providers: [AppService],
