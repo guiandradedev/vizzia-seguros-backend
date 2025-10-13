@@ -6,9 +6,9 @@ import { UserSocialAuth } from './entities/user_social_auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from '../auth_jwt/auth.service';
 import { CreateSocialUserDto } from './dto/create-user-social.dto';
-import { UsersService } from 'src/users/users.service';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '@supabase/supabase-js';
+import { CreateUserDto } from 'src/user/users/dto/create-user.dto';
+import { UsersService } from 'src/user/users/users.service';
 
 @Injectable()
 export class SocialAuthService {

@@ -14,6 +14,9 @@ export class TelephoneService {
   ) { }
 
   async create(createTelephoneDto: CreateTelephoneDto) {
+
+    console.log(createTelephoneDto)
+
     const telephone = this.telephoneRepository.create(createTelephoneDto);
 
     const telephoneEntity = await this.telephoneRepository.insert(telephone);

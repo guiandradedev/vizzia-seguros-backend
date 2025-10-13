@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumberString, IsString, MaxLength, MinLength } from "class-validator";
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/user/users/entities/user.entity";
 import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from "typeorm";
 
 @Entity('address')

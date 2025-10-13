@@ -3,15 +3,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { HashingServiceProtocol } from 'src/auth/auth_jwt/hashing/hashing.service';
-import { async } from 'rxjs';
-import { Address } from 'src/address/entities/address.entity';
-import { Telephone } from 'src/telephone/entities/telephone.entity';
-import { UserTelephoneService } from 'src/user_telephone/user_telephone.service';
-import { UserAddressService } from 'src/user_address/user_address.service';
-import { CreateUserAddressDto } from 'src/user_address/dto/create-user_address.dto';
-import { CreateUserTelephoneDto } from 'src/user_telephone/dto/create-user_telephone.dto';
+import { UserTelephoneService } from 'src/user/user_telephone/user_telephone.service';
+import { UserAddressService } from 'src/user/user_address/user_address.service';
+import { CreateUserAddressDto } from 'src/user/user_address/dto/create-user_address.dto';
+import { CreateUserTelephoneDto } from 'src/user/user_telephone/dto/create-user_telephone.dto';
 import 'multer';
 import { AuthService } from 'src/auth/auth_jwt/auth.service';
 
@@ -74,6 +71,7 @@ export class UsersService {
       telephone: telephonePayload
     };
 
+
     await this.userTelephoneService.create(userTelephone);
 
     const tokens = await this.authService.generateToken(savedUser.id)
@@ -88,7 +86,7 @@ export class UsersService {
   // await this.userTelephoneService.create()
 
   findAll() {
-    return `This action returns all users`;
+    return this.userRepository.find();
   }
 
   async findOne(id: number) {
@@ -102,7 +100,7 @@ export class UsersService {
     return result;
   }
 
-  private async findUserEntityById(id: number): Promise<User> {
+  async findUserEntityById(id: number): Promise<User> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) {
       throw new NotFoundException('User not found');

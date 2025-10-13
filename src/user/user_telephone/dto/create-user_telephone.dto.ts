@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsNumber } from "class-validator";
 import { CreateTelephoneDto } from "src/telephone/dto/create-telephone.dto";
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/user/users/entities/user.entity";
 
 export class CreateUserTelephoneDto {
     @IsNotEmpty()

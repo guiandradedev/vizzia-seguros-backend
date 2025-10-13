@@ -5,7 +5,7 @@ import { BcryptService } from './hashing/bcrypt.service';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from 'src/user/users/users.module';
 import { AuthService } from './auth.service';
 
 @Global()
@@ -17,7 +17,7 @@ import { AuthService } from './auth.service';
   ],
   controllers: [AuthController],
   providers: [AuthService, {
-    provide: HashingServiceProtocol,
+    provide: HashingServiceProtocol,  
     useClass: BcryptService, 
     }
   ],

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from 'src/user/users/users.service';
 import { HashingServiceProtocol } from './hashing/hashing.service';
 import jwtConfig from './config/jwt.config';
 import { JwtService } from '@nestjs/jwt';

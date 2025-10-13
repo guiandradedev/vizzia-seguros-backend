@@ -6,7 +6,7 @@ import { UserAddress } from './entities/user_address.entity';
 import { Repository } from 'typeorm';
 import { AddressService } from 'src/address/address.service'
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto'
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from 'src/user/users/users.service';
 
 
 @Injectable()

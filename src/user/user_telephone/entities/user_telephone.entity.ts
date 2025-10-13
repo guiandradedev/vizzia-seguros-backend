@@ -1,5 +1,5 @@
 import { Telephone } from "src/telephone/entities/telephone.entity";
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/user/users/entities/user.entity";
 import { Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
 
 @Entity('user_telephone')
