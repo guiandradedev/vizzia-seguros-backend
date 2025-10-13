@@ -6,7 +6,6 @@ export enum TelephoneType {
     PESSOAL = 'pessoal',
     FIXO = 'fixo'
 }
-
 @Entity('telephone')
 export class Telephone {
 

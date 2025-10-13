@@ -21,11 +21,11 @@ export class UsersService {
 
     private readonly userTelephoneService: UserTelephoneService,
     private readonly userAddressService: UserAddressService,
-    
+
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
 
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await this.hashingService.hash(createUserDto.passwordHash);
@@ -75,7 +75,7 @@ export class UsersService {
     await this.userTelephoneService.create(userTelephone);
 
     const tokens = await this.authService.generateToken(savedUser.id)
-  
+
     return {
       savedUser,
       tokens
