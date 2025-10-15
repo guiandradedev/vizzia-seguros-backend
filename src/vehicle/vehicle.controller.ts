@@ -6,7 +6,7 @@ import { AuthTokenGuard } from 'src/auth/auth_jwt/guards/auth-token.guard';
 import { TokenPayloadParam } from 'src/auth/auth_jwt/params/token-payload.param';
 import { TokenPayloadDto } from 'src/auth/auth_jwt/dto/token-payload.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/multer/config/multer.config';
+import { multerConfig } from 'src/files/multer/config/multer.config';
 
 @Controller('vehicle')
 @UseGuards(AuthTokenGuard)

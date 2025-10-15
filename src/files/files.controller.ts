@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 // 2. Mude para FilesInterceptor
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/multer/config/multer.config';
+import { multerConfig } from 'src/files/multer/config/multer.config';
 import { UploadVehicleImagesDto } from 'src/vehicle/dto/upload-vehicle-images.dto';
 
 @Controller('files')
