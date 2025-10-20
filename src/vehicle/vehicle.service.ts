@@ -95,7 +95,6 @@ export class VehicleService {
     if (!veiculos || veiculos.length === 0) 
       throw new NotFoundException('No vehicles found for this user');
 
-
-    return veiculos;
+    return veiculos.map(({ userId, ...vehicle }) => vehicle);
   }
 }

@@ -67,10 +67,10 @@ async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
             ...createUserSocialDto
         }
 
-        const {savedUser} = await this.usersService.create(userData);
+        const {userWithoutPassword} = await this.usersService.create(userData);
 
         return await this.linkSocialAccount(
-            savedUser.id,
+            userWithoutPassword.id,
             createUserSocialDto.provider,
             createUserSocialDto.id_provider
         );

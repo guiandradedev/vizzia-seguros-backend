@@ -7,7 +7,6 @@ import { AuthModule } from 'src/auth/auth_jwt/auth.module';
 import { UsersModule } from 'src/user/users/users.module';
 import { FaqModule } from 'src/faq/faq.module';
 import { SocialAuthModule } from 'src/auth/social_auth/social_auth.module';
-import { Telephone } from 'src/telephone/entities/telephone.entity';
 import { TelephoneModule } from 'src/telephone/telephone.module';
 import { UserTelephoneModule } from 'src/user/user_telephone/user_telephone.module';
 import { UserAddressModule } from 'src/user/user_address/user_address.module';

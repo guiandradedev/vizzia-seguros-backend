@@ -39,6 +39,11 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
                     message = 'Um dos parâmetros enviados está no formato inválido.';
                     details = `O formato do valor fornecido é inválido.`;
                     break;
+                case '22P02':
+                    status = HttpStatus.BAD_REQUEST; // 400
+                    message = 'Um dos parâmetros enviados está no formato inválido.';
+                    details = `O formato do valor fornecido é inválido.`;
+                    break;
                 default:
                     status = HttpStatus.INTERNAL_SERVER_ERROR;
                     message = 'Ocorreu um erro inesperado no banco de dados.';

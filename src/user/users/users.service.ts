@@ -76,8 +76,10 @@ export class UsersService {
 
     const tokens = await this.authService.generateToken(savedUser.id)
 
+    const {passwordHash, ...userWithoutPassword} = savedUser;
+
     return {
-      savedUser,
+      userWithoutPassword,
       tokens
     }
   }

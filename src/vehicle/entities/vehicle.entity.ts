@@ -2,6 +2,7 @@ import { IsString } from "class-validator";
 import { User } from "src/user/users/entities/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { VehicleImage } from "./vehicle-image.entity";
+import { MotorizationType } from "../enums/motorization-types.enum";
 
 @Entity('vehicle')
 export class Vehicle {
@@ -31,10 +32,14 @@ export class Vehicle {
     @Column({length: 10, type: 'varchar'})
     @IsString()
     brand: string;
-    
-    // @Column({name: 'id_user', type: 'int'})
-    // id_user: number;
 
+    @Column({
+        type: 'enum',
+        enum: MotorizationType
+    })
+    @IsString()
+    motorization: string;
+    
     @ManyToOne(() => User, {onDelete: 'CASCADE', eager: true, nullable: false})
     @JoinColumn({name: 'id_user'})
     userId: User;

@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { MotorizationType } from "../enums/motorization-types.enum";
 
 export class CreateVehicleDto {
     @IsString()
@@ -24,4 +25,8 @@ export class CreateVehicleDto {
     @IsString()
     @IsNotEmpty()
     brand: string;
+
+    @IsEnum(MotorizationType)
+    @IsNotEmpty()
+    motorization: MotorizationType;
 }
