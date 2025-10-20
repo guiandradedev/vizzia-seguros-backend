@@ -1,4 +1,5 @@
-import { IsOptional, IsBoolean, IsNotEmpty, IsString, MaxLength, MinLength } from '@nestjs/class-validator';
+import { IsOptional, IsBoolean, IsNotEmpty, IsString, MaxLength, MinLength, IsEnum } from '@nestjs/class-validator';
+import { Category } from '../entities/faq.entity';
 
 export class CreateFaqDto {
 
@@ -16,5 +17,8 @@ export class CreateFaqDto {
     @IsBoolean()
     @IsOptional()
     isActive?: boolean;
+
+    @IsEnum(Category, {message: `A categoria deve ser uma das seguintes: ${Object.values(Category).join(', ')}`,})
+    category: Category
 }
 

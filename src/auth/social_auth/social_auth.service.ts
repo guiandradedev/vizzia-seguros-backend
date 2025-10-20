@@ -6,9 +6,9 @@ import { UserSocialAuth } from './entities/user_social_auth.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from '../auth_jwt/auth.service';
 import { CreateSocialUserDto } from './dto/create-user-social.dto';
-import { UsersService } from 'src/users/users.service';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '@supabase/supabase-js';
+import { CreateUserDto } from 'src/user/users/dto/create-user.dto';
+import { UsersService } from 'src/user/users/users.service';
 
 @Injectable()
 export class SocialAuthService {
@@ -58,21 +58,19 @@ export class SocialAuthService {
 
         if (!userSocialAuth)
             return null;
-        1
+        
         return userSocialAuth.userId;
     }
 
-    async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
+async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
         const userData: CreateUserDto = {
-            name: createUserSocialDto.name,
-            email: createUserSocialDto.email,
-            passwordHash: createUserSocialDto.passwordHash
-        };
+            ...createUserSocialDto
+        }
 
-        const user = await this.usersService.create(userData);
+        const {userWithoutPassword} = await this.usersService.create(userData);
 
-        await this.linkSocialAccount(
-            user,
+        return await this.linkSocialAccount(
+            userWithoutPassword.id,
             createUserSocialDto.provider,
             createUserSocialDto.id_provider
         );
@@ -116,6 +114,8 @@ export class SocialAuthService {
 
         const relacao = this.userSocialAuthRepository.create(userLink);
         await this.userSocialAuthRepository.save(relacao);
+
+        return await this.authService.generateToken(user.id);
     }
 }
 

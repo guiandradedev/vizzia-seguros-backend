@@ -1,16 +1,31 @@
 @baseUrl = http://localhost:3001
+@authToken = {{authenticate.response.body.accessToken}}
+
+
+# Auth
+### Login
+# @name authenticate
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+	"password": "password",
+	"email": "isabela@isabela.com"
+}
 
 
 # FAQ
 
 ### create faq
 POST {{baseUrl}}/faq/
+Authorization: Bearer {{authToken}}
 Content-Type: application/json
 
 {
     "question": "O que é considerado no cálculo do meu seguro?",
     "answer": "O preço é calculado com base no seu perfil de risco (idade, histórico de condução, localização), as características do bem segurado (modelo, ano) e as coberturas que você escolheu.",
-    "isActive": false
+    "isActive": false,
+    "categoria": "pagamento"
 }
 
 
@@ -21,7 +36,7 @@ Content-Type: application/json
 {
     "question": "O que é considerado no cálculo do meu seguro?",
     "answer": "O preço é calculado com base no seu perfil de risco.",
-    "isActive": true
+    "isActive": true,
 }
 
 

@@ -18,10 +18,13 @@ export class FaqService {
   }
 
   async findAll(isActive?: boolean): Promise<Faq[]> {
-    if (isActive !== undefined) {
-      return this.faqRepository.find({ where: { isActive } });
+    if (isActive === true) {
+      console.log("Aqui");
+      return this.faqRepository.find({ where: { isActive: true } });
+    } else if (isActive === false) {
+      return this.faqRepository.find({ where: { isActive: false } });
     }
-    return this.faqRepository.find(); // retorna todos se isActive for undefined
+    return this.faqRepository.find();
   }
 
   async update(id: number, updateFaqDto: UpdateFaqDto) : Promise<Faq> {
@@ -33,6 +36,8 @@ export class FaqService {
       faq.answer = updateFaqDto?.answer ?? faq.answer;
 
       faq.isActive = updateFaqDto?.isActive ?? faq.isActive;
+
+      faq.category = updateFaqDto?.category ?? faq.category;
       
       await this.faqRepository.save(faq);
       return faq;

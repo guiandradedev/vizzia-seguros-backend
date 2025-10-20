@@ -1,4 +1,4 @@
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/user/users/entities/user.entity";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm";
 
 @Entity('user_social_auth')
