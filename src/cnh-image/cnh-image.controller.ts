@@ -1,6 +1,8 @@
 import {
   Controller,
   FileTypeValidator,
+  HttpCode,
+  HttpStatus,
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
@@ -18,6 +20,7 @@ export class CnhImageController {
   constructor(private readonly cnhImageService: CnhImageService) {}
 
   // A rota agora espera um userId como parâmetro na URL
+  @HttpCode(HttpStatus.NOT_IMPLEMENTED)
   @Post('upload/:userId')
   @UseInterceptors(FileInterceptor('cnhImage'))
   async uploadCnhImage(

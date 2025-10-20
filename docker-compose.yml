@@ -8,7 +8,7 @@ services:
     env_file:
       - .env
     ports:
-      - '3001:3000' # Mapeia a porta 3001 do host para 3000 do contêiner
+      - '3001:3001' # Mapeia a porta 3001 do host para 3000 do contêiner
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
