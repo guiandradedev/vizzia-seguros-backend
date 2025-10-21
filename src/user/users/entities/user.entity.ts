@@ -1,5 +1,6 @@
 import { IsDateString, IsNotEmpty, IsString, IsBoolean } from 'class-validator';
 import { IsEmail, MaxLength, MinLength, IsNumberString } from "class-validator";
+import { RoutePolicies } from 'src/roles/enum/route-policy.enum';
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('users')
@@ -47,4 +48,11 @@ export class User {
     @IsNotEmpty()
     @IsDateString()
     cnhIssueDate: Date;
+
+    @Column({
+        type: 'enum',
+        enum: RoutePolicies,
+        default: RoutePolicies.user
+    })
+    role: RoutePolicies;
 }

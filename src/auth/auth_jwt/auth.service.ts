@@ -38,14 +38,19 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        return this.generateToken(user.id);
+        return this.generateToken(user.id, user.role);
     }
 
-    async generateToken(userID: number) {
+    async generateToken(userID: number, userRole: string) {
+        const payload = {
+            role: userRole,
+        }
+        
         const accestokenPromise = this.jwtsign(
             this.jwtConfiguration.ttl,
             TokenTypes.ACCESS,
             userID.toString(),
+            payload
         );
 
         const refreshtokenPromise = this.jwtsign(
@@ -65,7 +70,7 @@ export class AuthService {
         };
     }
 
-    private async jwtsign<T>(expiresIn: number, type: string ,userID?: string, payload?: T) {
+    private async jwtsign<T>(expiresIn: number, type: string, userID?: string, payload?: T) {
         return this.jwtService.signAsync(
             {
                 sub: userID,
@@ -92,7 +97,7 @@ export class AuthService {
 
             if (!user) throw new UnauthorizedException('User not found');
 
-            return this.generateToken(user.id);
+            return this.generateToken(user.id, user.role);
         } catch (error) {
             throw new UnauthorizedException(error.message);
         }

@@ -42,7 +42,7 @@ export class SocialAuthService {
             ),
         });
 
-        return this.authService.generateToken(user.id);
+        return this.authService.generateToken(user.id, user.role);
     }
 
     private async findUserbyProviderId(providerID: string, provider: string) {
@@ -115,7 +115,7 @@ async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
         const relacao = this.userSocialAuthRepository.create(userLink);
         await this.userSocialAuthRepository.save(relacao);
 
-        return await this.authService.generateToken(user.id);
+        return await this.authService.generateToken(user.id, user.role);
     }
 }
 
