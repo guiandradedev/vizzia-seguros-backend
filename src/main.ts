@@ -28,7 +28,6 @@ async function bootstrap() {
 
   app.useGlobalFilters(
     new DatabaseExceptionFilter(),
-    new HttpExceptionFilter(),
   );
 
   // app.useGlobalGuards(new RoutePolicyGuard(app.get(Reflector)));
