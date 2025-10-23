@@ -37,6 +37,11 @@ export class Address {
     @IsString()
     state: string;
 
+    @Column({ length: 100, nullable: true })
+    @MaxLength(100)
+    @IsString()
+    complement?: string;
+
     @Column({ length: 11, nullable: false })
     @MaxLength(11)
     @MinLength(11)
