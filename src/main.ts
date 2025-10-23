@@ -1,10 +1,11 @@
-import { NestFactory, HttpAdapterHost } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { HttpException, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { RoutePolicyGuard } from './roles/guard/route-policy.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -29,6 +30,8 @@ async function bootstrap() {
     new DatabaseExceptionFilter(),
     new HttpExceptionFilter(),
   );
+
+  // app.useGlobalGuards(new RoutePolicyGuard(app.get(Reflector)));
 
   await app.listen(process.env.PORT ?? 3000);
 }

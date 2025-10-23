@@ -42,7 +42,20 @@ export class SocialAuthService {
             ),
         });
 
-        return this.authService.generateToken(user.id);
+        const createUserSocialToken = await this.authService.createUserSocialToken(
+            socialAuthLoginDto.provider,
+            userProviderData.id_provider,
+            userProviderData.email,
+            userProviderData.name,
+        );
+
+        const {accessToken, refreshToken} = await this.authService.generateToken(user.id, user.role);
+
+        return {
+            accessToken,
+            refreshToken,
+            createUserSocialToken,
+        }
     }
 
     private async findUserbyProviderId(providerID: string, provider: string) {
@@ -115,7 +128,7 @@ async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
         const relacao = this.userSocialAuthRepository.create(userLink);
         await this.userSocialAuthRepository.save(relacao);
 
-        return await this.authService.generateToken(user.id);
+        return await this.authService.generateToken(user.id, user.role);
     }
 }
 

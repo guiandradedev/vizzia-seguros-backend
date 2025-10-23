@@ -74,7 +74,7 @@ export class UsersService {
 
     await this.userTelephoneService.create(userTelephone);
 
-    const tokens = await this.authService.generateToken(savedUser.id)
+    const tokens = await this.authService.generateToken(savedUser.id, savedUser.role);
 
     const {passwordHash, ...userWithoutPassword} = savedUser;
 
@@ -129,7 +129,7 @@ export class UsersService {
   async me(id: number) {
     const user = await this.findOne(id);
     const vehicles = [];
-
+ 
     return {
       ...user,
       vehicles,
