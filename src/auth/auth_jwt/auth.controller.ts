@@ -16,6 +16,7 @@ export class AuthController {
 
     @Post('refresh-token')
     refreshToken(@Body() refreshTokenDto: RefreshTokenDto){
+        console.log('RAW BODY NO CONTROLLER:', refreshTokenDto);
         return this.authService.refreshToken(refreshTokenDto);
     }
 }

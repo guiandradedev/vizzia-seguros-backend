@@ -42,19 +42,11 @@ export class SocialAuthService {
             ),
         });
 
-        const createUserSocialToken = await this.authService.createUserSocialToken(
-            socialAuthLoginDto.provider,
-            userProviderData.id_provider,
-            userProviderData.email,
-            userProviderData.name,
-        );
-
         const {accessToken, refreshToken} = await this.authService.generateToken(user.id, user.role);
 
         return {
             accessToken,
             refreshToken,
-            createUserSocialToken,
         }
     }
 
