@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { ROUTE_POLICY_KEY, REQUEST_TOKEN_PAYLOAD_KEY } from "src/auth/auth_jwt/auth.constants";
 import { RoutePolicies } from "../enum/route-policy.enum";
@@ -21,11 +21,11 @@ export class RoutePolicyGuard implements CanActivate{
         const tokenPayload = request[REQUEST_TOKEN_PAYLOAD_KEY];
 
         if(!tokenPayload){
-            throw new UnauthorizedException('Rota requer permisao');
+            throw new ForbiddenException('Rota requer permisao');
         }
 
         if(!routePolicyRequired.includes(tokenPayload.role as RoutePolicies)){
-            throw new UnauthorizedException('Voce nao tem permissao para acesar esta rota');
+            throw new ForbiddenException('Voce nao tem permissao para acesar esta rota');
         }
 
         return true;

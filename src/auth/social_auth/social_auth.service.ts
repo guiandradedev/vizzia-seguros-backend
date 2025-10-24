@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { SocialAuthLoginDto } from './dto/social_authLogin.dto';
 import { GoogleAuthProvider } from './providers/google_auth/google_auth';
 import { Repository } from 'typeorm';
@@ -67,7 +67,7 @@ export class SocialAuthService {
         return userSocialAuth.userId;
     }
 
-async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
+    async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
         const userData: CreateUserDto = {
             ...createUserSocialDto
         }
@@ -95,9 +95,9 @@ async createUserAndLink(createUserSocialDto: CreateSocialUserDto) {
 
         if (social) {
             if (social.userId.id === userInstance)
-                throw new BadRequestException('You are already linked to this account');
+                throw new ConflictException('You are already linked to this account');
 
-            throw new BadRequestException('Social account its already linked to other user');
+            throw new ConflictException('Social account its already linked to other user');
         }
 
         return await this.linkSocialAccount(userInstance, socialAuthLoginDto.provider, userProviderData.id_provider);
