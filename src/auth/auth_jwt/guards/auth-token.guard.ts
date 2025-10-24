@@ -42,6 +42,8 @@ export class AuthTokenGuard implements CanActivate {
         throw new UnauthorizedException('Token invalido');
 
       request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
+
+      console.log('Payload do token:', payload);
     }catch (error) {
       throw new UnauthorizedException('Token invalido ou expirado');
     }

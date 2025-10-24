@@ -9,7 +9,6 @@ import { SetRoutePolicy } from 'src/roles/decorators/set-route-policy.decorator'
 import { RoutePolicies } from 'src/roles/enum/route-policy.enum';
 import { RoutePolicyGuard } from 'src/roles/guard/route-policy.guard';
 
-@UseGuards(RoutePolicyGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
@@ -21,14 +20,14 @@ export class UsersController {
   }
 
   @SetRoutePolicy([RoutePolicies.admin])
-  @UseGuards(AuthTokenGuard)
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
-  @UseGuards(AuthTokenGuard)
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @Patch()
   update(
     @Body() updateUserDto: UpdateUserDto,
@@ -38,14 +37,14 @@ export class UsersController {
   }
 
   @SetRoutePolicy([RoutePolicies.admin])
-  @UseGuards(AuthTokenGuard)
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
-  @UseGuards(AuthTokenGuard)
   @Get('/me')
   me(
     @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
@@ -54,3 +53,4 @@ export class UsersController {
     return this.usersService.me(tokenPayloadParam.id);
   }
 }
+
