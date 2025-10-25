@@ -35,10 +35,14 @@ export class Vehicle {
 
     @Column({
         type: 'enum',
-        enum: MotorizationType
+        enum: MotorizationType,
+        nullable: false,
     })
     @IsString()
     motorization: string;
+
+    @Column({type: 'boolean', default: false})
+    finished: boolean;
     
     @ManyToOne(() => User, {onDelete: 'CASCADE', eager: true, nullable: false})
     @JoinColumn({name: 'id_user'})

@@ -5,11 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Vehicle } from './entities/vehicle.entity';
 import { UsersModule } from 'src/user/users/users.module';
 import { VehicleImage } from './entities/vehicle-image.entity';
+import { ConductorModule } from 'src/conductor/conductor.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Vehicle, VehicleImage]),
     UsersModule,
+    ConductorModule,
   ],
   controllers: [VehicleController],
   providers: [VehicleService],

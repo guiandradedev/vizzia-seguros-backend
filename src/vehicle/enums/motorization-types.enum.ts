@@ -1,9 +1,8 @@
 export enum MotorizationType {
-    GASOLINE = 'gasoline',
-    DIESEL = 'diesel',
-    ELECTRIC = 'electric',
-    HYBRID = 'hybrid',
-    HYDROGEN = 'hydrogen',
-    ETHANOL = 'ethanol',
-    FLEX = 'flex'
-}
+    GASOLINE = 'Gasoline',
+    ETHANOL = 'Ethanol',
+    DIESEL = 'Diesel',
+    ELECTRIC = 'Electric',
+    FLEX = 'Flex',
+    HYBRID = 'Hybrid',
+};

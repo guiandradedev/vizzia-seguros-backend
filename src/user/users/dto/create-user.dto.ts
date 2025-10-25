@@ -35,14 +35,14 @@ class UserDto {
     @IsDateString()
     birthDate: string;
 
-    @IsBoolean()
-    @IsNotEmpty()
-    status: boolean;
-
     @IsNotEmpty()
     @IsDateString()
     cnhIssueDate: Date;
 
+    @IsBoolean()
+    @IsNotEmpty()
+    status: boolean;
+
 }
 
-export class CreateUserDto extends IntersectionType(UserDto, CreateAddressDto, CreateTelephoneDto) {}
+export class CreateUserDto extends IntersectionType(UserDto, CreateAddressDto, CreateTelephoneDto) { }

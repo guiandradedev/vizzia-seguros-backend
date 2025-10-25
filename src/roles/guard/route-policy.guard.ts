@@ -20,8 +20,8 @@ export class RoutePolicyGuard implements CanActivate{
         const request = context.switchToHttp().getRequest();
         const tokenPayload = request[REQUEST_TOKEN_PAYLOAD_KEY];
 
-        console.log('RoutePolicyGuard - role required:', routePolicyRequired);
-        console.log('RoutePolicyGuard - token payload:', tokenPayload);
+        // console.log('RoutePolicyGuard - role required:', routePolicyRequired);
+        // console.log('RoutePolicyGuard - token payload:', tokenPayload);
 
         if(!tokenPayload){
             throw new ForbiddenException('Rota requer permisao');

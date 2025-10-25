@@ -10,6 +10,9 @@ import { multerConfig } from 'src/files/multer/config/multer.config';
 import { RoutePolicyGuard } from 'src/roles/guard/route-policy.guard';
 import { SetRoutePolicy } from 'src/roles/decorators/set-route-policy.decorator';
 import { RoutePolicies } from 'src/roles/enum/route-policy.enum';
+import { ParseArrayPipe } from '@nestjs/common';
+import { CreateVehicleImageDto } from './dto/create-vehicle-image.dto';
+import { AssignConductorsDto } from './dto/assignconductors.dto';
 
 @Controller('vehicle')
 @UseGuards(AuthTokenGuard, RoutePolicyGuard)
@@ -18,13 +21,35 @@ export class VehicleController {
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post()
-  @UseInterceptors(FilesInterceptor('files', 10, multerConfig))
+  @UseInterceptors(FilesInterceptor('photos', 5, multerConfig)) // aceita múltiplas fotos no campo 'photos'
   create(
     @Body() createVehicleDto: CreateVehicleDto,
+    @Body('photos') photosMeta: string | any[] | undefined, // pode ser JSON string ou array de objetos
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
     @UploadedFiles() files: Array<Express.Multer.File>
   ) {
-    return this.vehicleService.create(createVehicleDto, tokenPayloadDto.id, files);
+    return this.vehicleService.create(createVehicleDto, tokenPayloadDto.id, files, photosMeta);
+  }
+
+  @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
+  @Post('images')
+  @UseInterceptors(FilesInterceptor('photos', 5, multerConfig)) // arquivos no campo 'photos'
+  addImages(
+    @Body() body: CreateVehicleImageDto,
+    @UploadedFiles() files: Array<Express.Multer.File>
+  ){
+    // body.vehicle_id e body.photos (metadata) são esperados
+    return this.vehicleService.addImages(body.vehicle_id, files, body.photos);
+  }
+
+  @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
+  @Post('conductors')
+  assignConductors(
+    @Body() assignConductorsDto: AssignConductorsDto,
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+  ) {
+    // console.log(tokenPayloadDto);
+    return this.vehicleService.assignConductors(assignConductorsDto, tokenPayloadDto.id);
   }
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])

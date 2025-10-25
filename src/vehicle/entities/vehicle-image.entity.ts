@@ -9,6 +9,9 @@ export class VehicleImage {
     @Column({ type: 'varchar', length: 255, comment: 'Caminho ou URL da imagem' })
     path: string;
 
+    @Column({ type: 'varchar', length: 30, comment: 'Tipo da imagem (frente, lado esquerdo, etc)' })
+    type: string; // ex: 'frente', 'lado esquerdo', etc
+
     // Relacionamento: Muitas imagens pertencem a UM veículo.
     @ManyToOne(() => Vehicle, (vehicle) => vehicle.images, { 
         onDelete: 'CASCADE', // Se o veículo for deletado, suas imagens também serão.
