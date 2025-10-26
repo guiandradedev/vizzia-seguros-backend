@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conductor } from './entities/conductor.entity';
 import { VehicleConductor } from './entities/vehicle-conductor.entity';
+import { ConductorsTelephoneService } from '../conductors_telephone/conductors_telephone.service';
+import { CreateConductorsTelephoneDto } from '../conductors_telephone/dto/create-conductors_telephone.dto';
 
 @Injectable()
 export class ConductorService {
@@ -14,6 +16,8 @@ export class ConductorService {
 
     @InjectRepository(VehicleConductor)
     private readonly vehicleConductorRepository: Repository<VehicleConductor>,
+
+    private readonly conductorTelephoneService: ConductorsTelephoneService,
   ) {}
 
   async create(createConductorDto: CreateConductorDto, id_vehicle: number) {
@@ -25,6 +29,16 @@ export class ConductorService {
       id_vehicle: id_vehicle,
       id_conductor: conductor.id,
     });
+
+    const conductorTelephone: CreateConductorsTelephoneDto = {
+      conductorId: conductor,
+      telephone: {
+        phone_number: createConductorDto.phone_number,
+        type: createConductorDto.type,
+      },
+    };
+
+    await this.conductorTelephoneService.create(conductorTelephone);
 
     return conductor;
   }

@@ -13,6 +13,7 @@ import { UserAddressModule } from 'src/user/user_address/user_address.module';
 import { AddressModule } from 'src/address/address.module';
 import { VehicleModule } from 'src/vehicle/vehicle.module';
 import { FilesModule } from 'src/files/files.module';
+import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 
 @Module({
   imports: [
@@ -45,7 +46,8 @@ import { FilesModule } from 'src/files/files.module';
     UserTelephoneModule,
     AddressModule,
     VehicleModule,
-    FilesModule
+    FilesModule,
+    ConductorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

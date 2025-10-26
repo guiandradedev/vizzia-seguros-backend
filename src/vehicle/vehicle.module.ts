@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Vehicle } from './entities/vehicle.entity';
 import { UsersModule } from 'src/user/users/users.module';
 import { VehicleImage } from './entities/vehicle-image.entity';
-import { ConductorModule } from 'src/conductor/conductor.module';
+import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 
 @Module({
   imports: [

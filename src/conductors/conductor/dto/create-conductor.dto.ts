@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsDateString, IsEmail, IsString } from "class-validator";
+import { IsNotEmpty, IsDateString, IsEmail, IsString, IsOptional } from "class-validator";
 import { IsCnh } from "src/validators/is-cnh.decorator";
 import { IsCpf } from "src/validators/is-cpf.decorator";
 import { Transform } from "class-transformer";
+import { CreateTelephoneDto } from "src/telephone/dto/create-telephone.dto";
 
-export class CreateConductorDto {
+export class CreateConductorDto extends CreateTelephoneDto{
 
     @IsString()
     @IsNotEmpty()
@@ -31,4 +32,12 @@ export class CreateConductorDto {
     @IsNotEmpty()
     @IsDateString()
     cnhIssueDate: Date;
+
+    @IsNotEmpty()
+    @IsDateString()
+    cnhExpiryDate: Date;
+
+    @IsString()
+    @IsOptional()
+    relationship?: string;
 }

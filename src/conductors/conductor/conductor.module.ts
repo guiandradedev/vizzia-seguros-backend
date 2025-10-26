@@ -8,6 +8,8 @@ import { VehicleConductor } from './entities/vehicle-conductor.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Conductor, VehicleConductor]),
+    ConductorModule,
+    
   ],
   controllers: [ConductorController],
   providers: [ConductorService],

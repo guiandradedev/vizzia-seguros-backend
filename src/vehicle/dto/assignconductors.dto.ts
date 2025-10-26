@@ -1,6 +1,6 @@
 import { Type } from "class-transformer";
 import { IsArray, IsNumber, ValidateNested } from "class-validator";
-import { CreateConductorDto } from "src/conductor/dto/create-conductor.dto";
+import { CreateConductorDto } from "src/conductors/conductor/dto/create-conductor.dto";
 
 export class AssignConductorsDto {
     @IsNumber()

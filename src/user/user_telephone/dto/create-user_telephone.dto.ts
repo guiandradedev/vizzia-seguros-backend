@@ -4,7 +4,6 @@ import { User } from "src/user/users/entities/user.entity";
 
 export class CreateUserTelephoneDto {
     @IsNotEmpty()
-    @IsNumber()
     userId: User;
 
     @IsNotEmpty()

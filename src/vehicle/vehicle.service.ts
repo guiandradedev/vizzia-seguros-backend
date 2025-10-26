@@ -13,8 +13,8 @@ import { MotorizationTypeReverseMap } from './map/motorization-type.map';
 import path from 'path';
 import { CreateVehicleImageDto } from './dto/create-vehicle-image.dto';
 import { AssignConductorsDto } from './dto/assignconductors.dto';
-import { Conductor } from 'src/conductor/entities/conductor.entity';
-import { ConductorService } from 'src/conductor/conductor.service';
+import { Conductor } from 'src/conductors/conductor/entities/conductor.entity';
+import { ConductorService } from 'src/conductors/conductor/conductor.service';
 
 @Injectable()
 export class VehicleService {

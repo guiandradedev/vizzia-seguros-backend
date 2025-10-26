@@ -38,4 +38,13 @@ export class Conductor {
     @IsNotEmpty()
     @IsDateString()
     cnhIssueDate: Date;
+
+    @Column({ type: 'date', nullable: false })
+    @IsNotEmpty()
+    @IsDateString()
+    cnhExpiryDate: Date;
+
+    @Column({ type: 'varchar', length: 50, nullable: true })
+    @IsString()
+    relationship?: string;
 }
