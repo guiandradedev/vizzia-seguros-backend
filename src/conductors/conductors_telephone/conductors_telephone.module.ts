@@ -13,5 +13,6 @@ import { TelephoneModule } from 'src/telephone/telephone.module';
   ],
   controllers: [ConductorsTelephoneController],
   providers: [ConductorsTelephoneService],
+  exports: [ConductorsTelephoneService],
 })
 export class ConductorsTelephoneModule {}
