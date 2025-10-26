@@ -179,9 +179,10 @@ export class VehicleService {
     );
 
     vehicle.finished = true;
-    await this.vehicleRepository.update(vehicle.id, vehicle);
+    await this.vehicleRepository.save(vehicle);
 
     const saved = await this.vehicleImageRepository.save(imageEntities);
+
     return saved;
   }
 
@@ -242,11 +243,11 @@ export class VehicleService {
 
 
   async findAllVehiclesByUser(userId: number) {
+    const user = await this.usersService.findUserEntityById(userId);
+
     const veiculos = await this.vehicleRepository.find({
       where: {
-        userId: {
-          id: userId
-        }
+        userId: user
       }
     });
 

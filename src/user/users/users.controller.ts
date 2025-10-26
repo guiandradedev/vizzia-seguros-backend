@@ -33,7 +33,7 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
     @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
   ) {
-    return this.usersService.update(tokenPayloadParam.id, updateUserDto);
+    return this.usersService.update(tokenPayloadParam.sub, updateUserDto);
   }
 
   @SetRoutePolicy([RoutePolicies.admin])
@@ -50,7 +50,7 @@ export class UsersController {
     @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
   ) {
     console.log(tokenPayloadParam);
-    return this.usersService.me(tokenPayloadParam.id);
+    return this.usersService.me(tokenPayloadParam.sub);
   }
 }
 

@@ -34,6 +34,6 @@ export class SocialAuthController {
         @Body() socialAuthLoginDto: SocialAuthLoginDto,
         @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
     ){
-        return this.socialAuthService.validateAndLink(socialAuthLoginDto, tokenPayloadParam.id);
+        return this.socialAuthService.validateAndLink(socialAuthLoginDto, tokenPayloadParam.sub);
     }
 }

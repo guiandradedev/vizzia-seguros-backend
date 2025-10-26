@@ -28,7 +28,7 @@ export class VehicleController {
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
     @UploadedFiles() files: Array<Express.Multer.File>
   ) {
-    return this.vehicleService.create(createVehicleDto, tokenPayloadDto.id, files, photosMeta);
+    return this.vehicleService.create(createVehicleDto, tokenPayloadDto.sub, files, photosMeta);
   }
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
@@ -49,7 +49,7 @@ export class VehicleController {
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
   ) {
     // console.log(tokenPayloadDto);
-    return this.vehicleService.assignConductors(assignConductorsDto, tokenPayloadDto.id);
+    return this.vehicleService.assignConductors(assignConductorsDto, tokenPayloadDto.sub);
   }
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
@@ -57,7 +57,7 @@ export class VehicleController {
   findAll(
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
   ) {
-    return this.vehicleService.findAllVehiclesByUser(tokenPayloadDto.id);
+    return this.vehicleService.findAllVehiclesByUser(tokenPayloadDto.sub);
   }
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])

@@ -1,5 +1,5 @@
 export class TokenPayloadDto {
-    id: number;
+    sub: number;
     name: string;
     iat: number;
     exp: number;
