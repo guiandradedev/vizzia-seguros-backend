@@ -14,7 +14,7 @@ export class Vehicle {
     @IsString()
     plate: string;
     
-    @Column({length: 10, type: 'varchar'})
+    @Column({length: 100, type: 'varchar'})
     @IsString()
     model: string;
     

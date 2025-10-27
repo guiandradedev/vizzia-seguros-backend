@@ -15,6 +15,13 @@ export class ConductorController {
   //   return this.conductorService.create(createConductorDto);
   // }
 
+
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
+  @Get('/vehicle/:id')
+  findAllByVehicle(@Param('id') id: number) {
+    return this.conductorService.findAllByVehicle(id);
+  }
+
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @Get()
   findAll() {
