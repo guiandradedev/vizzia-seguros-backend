@@ -34,7 +34,7 @@ import { ConductorModule } from 'src/conductors/conductor/conductor.module';
         entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Caminho corrigido para as entidades
         synchronize: true, // Em desenvolvimento, pode ser true. Em produção, use migrações.
         autoLoadEntities: true,
-        // dropSchema: true,
+        dropSchema: true,
       })
     }),
     AuthModule,

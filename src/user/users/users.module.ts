@@ -6,13 +6,15 @@ import { User } from './entities/user.entity';
 import { UserTelephoneModule } from 'src/user/user_telephone/user_telephone.module';
 import { UserAddressModule } from 'src/user/user_address/user_address.module';
 import { AuthModule } from 'src/auth/auth_jwt/auth.module';
+import { VehicleModule } from 'src/vehicle/vehicle.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),
     UserTelephoneModule,
     UserAddressModule,
-    forwardRef(() => AuthModule)
+    forwardRef(() => AuthModule),
+    VehicleModule
   ],
   controllers: [UsersController],
   providers: [UsersService],

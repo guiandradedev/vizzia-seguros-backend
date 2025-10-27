@@ -53,7 +53,16 @@ export class ConductorService {
       relations: ['conductorId'],
     });
 
-    return vehicleConductors.map(vc => vc.conductorId);
+    const conductors = vehicleConductors.map(vc => vc.conductorId);
+
+    const conductorsWithTelephones = await Promise.all(
+      conductors.map(async conductor => {
+        const telephone = await this.conductorTelephoneService.findConductorTelephone(conductor.id);
+        return { ...conductor, telephone };
+      }),
+    );
+
+    return conductorsWithTelephones;
   }
 
   findOne(id: number) {

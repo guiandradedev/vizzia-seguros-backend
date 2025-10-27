@@ -11,6 +11,7 @@ import { CreateUserAddressDto } from 'src/user/user_address/dto/create-user_addr
 import { CreateUserTelephoneDto } from 'src/user/user_telephone/dto/create-user_telephone.dto';
 import 'multer';
 import { AuthService } from 'src/auth/auth_jwt/auth.service';
+import { VehicleService } from 'src/vehicle/vehicle.service';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +22,7 @@ export class UsersService {
 
     private readonly userTelephoneService: UserTelephoneService,
     private readonly userAddressService: UserAddressService,
+    private readonly vehicleService: VehicleService,
 
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
@@ -128,8 +130,18 @@ export class UsersService {
 
   async me(id: number) {
     const user = await this.findOne(id);
-    const vehicles = [];
- 
+    let vehicles: any[];
+
+    try {
+      vehicles = await this.vehicleService.findAllVehiclesByUser(id);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        vehicles = [];
+      } else {
+        throw new NotFoundException(`Failed to retrieve vehicles for user ${id}: ${error.message}`);
+      }
+    }
+
     return {
       ...user,
       vehicles,

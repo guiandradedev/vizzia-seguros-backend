@@ -10,10 +10,10 @@ import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Vehicle, VehicleImage]),
-    UsersModule,
     ConductorModule,
   ],
   controllers: [VehicleController],
   providers: [VehicleService],
+  exports: [VehicleService],
 })
 export class VehicleModule {}

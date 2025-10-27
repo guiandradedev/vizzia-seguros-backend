@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsString, Max, Min } from "class-validator";
 import { User } from "src/user/users/entities/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { VehicleImage } from "./vehicle-image.entity";
@@ -41,8 +41,10 @@ export class Vehicle {
     @IsString()
     motorization: string;
 
-    @Column({type: 'boolean', default: false})
-    finished: boolean;
+    @Column({type: 'int', default: 1})
+    @Max(3)
+    @Min(1)
+    state: number;
     
     @ManyToOne(() => User, {onDelete: 'CASCADE', eager: true, nullable: false})
     @JoinColumn({name: 'id_user'})

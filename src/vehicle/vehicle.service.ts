@@ -1,17 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
-import { UsersService } from 'src/user/users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vehicle } from './entities/vehicle.entity';
 import { Repository } from 'typeorm';
 import { VehicleImage } from './entities/vehicle-image.entity';
 import { DataSource } from 'typeorm';
 import { User } from 'src/user/users/entities/user.entity';
-import { MotorizationType } from './enums/motorization-types.enum';
 import { MotorizationTypeReverseMap } from './map/motorization-type.map';
-import path from 'path';
-import { CreateVehicleImageDto } from './dto/create-vehicle-image.dto';
 import { AssignConductorsDto } from './dto/assignconductors.dto';
 import { Conductor } from 'src/conductors/conductor/entities/conductor.entity';
 import { ConductorService } from 'src/conductors/conductor/conductor.service';
@@ -19,7 +15,6 @@ import { ConductorService } from 'src/conductors/conductor/conductor.service';
 @Injectable()
 export class VehicleService {
   constructor(
-    private readonly usersService: UsersService,
     private readonly conductorService: ConductorService,
 
     @InjectRepository(Vehicle)
@@ -34,12 +29,10 @@ export class VehicleService {
 
   async create(
     createVehicleDto: CreateVehicleDto,
-    userId: number,
+    userID: number,
     photos: Array<Express.Multer.File>, // array de arquivos do multer
     photosMeta: string | any[] | undefined, // metadata: JSON string ou array de objetos { file, type } ou array de tipos
   ) {
-
-    const user = await this.usersService.findUserEntityById(userId);
 
     const { motorization, ...restDto } = createVehicleDto;
 
@@ -69,7 +62,7 @@ export class VehicleService {
       const vehicleInstance = manager.create(Vehicle, {
         motorization: motorizationString,
         ...restDto,
-        userId: user,
+        userId: { id: userID} as User,
       });
 
       const savedVehicle = await manager.save(vehicleInstance);
@@ -178,7 +171,7 @@ export class VehicleService {
       })
     );
 
-    vehicle.finished = true;
+    vehicle.state = 3;
     await this.vehicleRepository.save(vehicle);
 
     const saved = await this.vehicleImageRepository.save(imageEntities);
@@ -226,9 +219,8 @@ export class VehicleService {
     if (!vehicle)
       throw new NotFoundException('Vehicle not found');
     
-    const user = await this.usersService.findUserEntityById(userId);
     
-    if (vehicle.userId.id != user.id)
+    if (vehicle.userId.id != userId)
       throw new BadRequestException('You do not have permission to assign conductors to this vehicle');
     
     const createdConductors: Conductor[] = [];
@@ -237,23 +229,29 @@ export class VehicleService {
       const created = await this.conductorService.create(conductorDto, vehicle.id);
       createdConductors.push(created);
     }
+
+    vehicle.state = 2;
+    await this.vehicleRepository.save(vehicle);
     
     return createdConductors;
   }
 
 
   async findAllVehiclesByUser(userId: number) {
-    const user = await this.usersService.findUserEntityById(userId);
-
-    const veiculos = await this.vehicleRepository.find({
+    let veiculos = await this.vehicleRepository.find({
       where: {
-        userId: user
+        userId: { id: userId },
       }
     });
 
     if (!veiculos || veiculos.length === 0)
       throw new NotFoundException('No vehicles found for this user');
 
-    return veiculos.map(({ userId, ...vehicle }) => vehicle);
+    const vehiclesWithConductors = await Promise.all(veiculos.map(async v => {
+      const conductors = await this.conductorService.findAllByVehicle(v.id);
+      return { ...v, conductors };
+    }));
+
+    return vehiclesWithConductors.map(({ userId, ...vehicle }) => vehicle);
   }
 }

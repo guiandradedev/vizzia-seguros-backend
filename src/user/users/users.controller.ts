@@ -49,7 +49,7 @@ export class UsersController {
   me(
     @TokenPayloadParam() tokenPayloadParam: TokenPayloadDto
   ) {
-    console.log(tokenPayloadParam);
+    // console.log(tokenPayloadParam);
     return this.usersService.me(tokenPayloadParam.sub);
   }
 }
