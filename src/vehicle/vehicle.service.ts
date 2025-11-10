@@ -1,6 +1,5 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
-import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vehicle } from './entities/vehicle.entity';
 import { Repository } from 'typeorm';
@@ -11,6 +10,7 @@ import { MotorizationTypeReverseMap } from './map/motorization-type.map';
 import { AssignConductorsDto } from './dto/assignconductors.dto';
 import { Conductor } from 'src/conductors/conductor/entities/conductor.entity';
 import { ConductorService } from 'src/conductors/conductor/conductor.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class VehicleService {
@@ -23,9 +23,16 @@ export class VehicleService {
     @InjectRepository(VehicleImage)
     private readonly vehicleImageRepository: Repository<VehicleImage>,
 
+    // @Inject(CACHE_MANAGER)
+    // private readonly cacheManager: Cache,
+
     private readonly dataSource: DataSource,
 
   ) { }
+
+  private getDraftKey(userId: number): string {
+    return `draft:vechicle:user:${userId}`;
+  }
 
   async create(
     createVehicleDto: CreateVehicleDto,
@@ -62,7 +69,7 @@ export class VehicleService {
       const vehicleInstance = manager.create(Vehicle, {
         motorization: motorizationString,
         ...restDto,
-        userId: { id: userID} as User,
+        userId: { id: userID } as User,
       });
 
       const savedVehicle = await manager.save(vehicleInstance);
@@ -198,19 +205,11 @@ export class VehicleService {
     }));
 
     const { userId, ...vehicleWithoutUser } = vehicle;
-    return { 
-      ...vehicleWithoutUser, 
+    return {
+      ...vehicleWithoutUser,
       images: filePaths,
       conductors: await this.conductorService.findAllByVehicle(vehicle.id),
     };
-  }
-
-  update(id: number, updateVehicleDto: UpdateVehicleDto) {
-    return `This action updates a #${id} vehicle`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} vehicle`;
   }
 
   async assignConductors(assignConductorsDto: AssignConductorsDto, userId: number) {
@@ -218,11 +217,11 @@ export class VehicleService {
 
     if (!vehicle)
       throw new NotFoundException('Vehicle not found');
-    
-    
+
+
     if (vehicle.userId.id != userId)
       throw new BadRequestException('You do not have permission to assign conductors to this vehicle');
-    
+
     const createdConductors: Conductor[] = [];
 
     for (const conductorDto of assignConductorsDto.conductors) {
@@ -232,7 +231,7 @@ export class VehicleService {
 
     vehicle.state = 2;
     await this.vehicleRepository.save(vehicle);
-    
+
     return createdConductors;
   }
 
@@ -253,5 +252,20 @@ export class VehicleService {
     }));
 
     return vehiclesWithConductors.map(({ userId, ...vehicle }) => vehicle);
+  }
+
+
+  async deleteVehicle(id: number, userId: number) {
+    const vehicle = await this.vehicleRepository.findOneBy({ id });
+
+    if (!vehicle)
+      throw new NotFoundException('Vehicle not found');
+
+    if (vehicle.userId.id != userId)
+      throw new ForbiddenException('You do not have permission to delete this vehicle');
+
+    await this.vehicleRepository.remove(vehicle);
+
+    return { message: 'Vehicle deleted successfully' };
   }
 }

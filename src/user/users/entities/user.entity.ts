@@ -2,6 +2,8 @@ import { IsDateString, IsNotEmpty, IsString, IsBoolean } from 'class-validator';
 import { IsEmail, MaxLength, MinLength, IsNumberString } from "class-validator";
 import { RoutePolicies } from 'src/roles/enum/route-policy.enum';
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { GenderTypes } from '../enums/gender-type.enum';
+import { MaritalStatusType } from '../enums/marital_status-Type.enum';
 
 @Entity('users')
 export class User {
@@ -55,4 +57,10 @@ export class User {
         default: RoutePolicies.user
     })
     role: RoutePolicies;
+
+    @Column({enum: GenderTypes})
+    gender: GenderTypes;
+
+    @Column({enum: MaritalStatusType})
+    marital_status: MaritalStatusType
 }

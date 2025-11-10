@@ -14,6 +14,8 @@ import { AddressModule } from 'src/address/address.module';
 import { VehicleModule } from 'src/vehicle/vehicle.module';
 import { FilesModule } from 'src/files/files.module';
 import { ConductorModule } from 'src/conductors/conductor/conductor.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-store';
 
 @Module({
   imports: [
@@ -36,6 +38,13 @@ import { ConductorModule } from 'src/conductors/conductor/conductor.module';
         autoLoadEntities: true,
         dropSchema: true,
       })
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: 'localhost',
+      port: 6379,
+      ttl: 60 * 60 * 24,
     }),
     AuthModule,
     UsersModule,

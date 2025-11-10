@@ -71,12 +71,15 @@ export class VehicleController {
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVehicleDto: UpdateVehicleDto) {
-    return this.vehicleService.update(+id, updateVehicleDto);
+    // return this.vehicleService.update(+id, updateVehicleDto);
   }
 
-  @SetRoutePolicy([RoutePolicies.admin])
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.vehicleService.remove(+id);
+  @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
+  @Delete()
+  remove(
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+    @Body('id') id_vehicle: number,
+  ) {
+    return this.vehicleService.deleteVehicle(id_vehicle, tokenPayloadDto.sub);
   }
 }

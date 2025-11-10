@@ -1,5 +1,7 @@
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 import { MotorizationType } from "../enums/motorization-types.enum";
+import { Brands } from "../enums/brand.enum";
+import { TransmissionType } from "../enums/transmission-type.enum";
 
 export class CreateVehicleDto {
     @IsString()
@@ -22,14 +24,23 @@ export class CreateVehicleDto {
     @IsNotEmpty()
     odometer: string;
 
-    @IsString()
     @IsNotEmpty()
-    brand: string;
+    @IsEnum(Brands)
+    brand: Brands;
 
     // @IsNumber()
     @IsNotEmpty()
     motorization: number;
 
+    @IsEnum(TransmissionType)
+    transmission: TransmissionType;
+
     @IsOptional()
     photos?: any;
+
+    @IsString()
+    usage: string;
+
+    @IsNumber()
+    fipe_moment: number;
 }
