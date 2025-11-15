@@ -114,7 +114,6 @@ export class VehicleController {
     return this.vehicleService.saveStep3_photos(tokenPayloadDto.sub, files, photosMeta);
   }
 
-
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('step/4')
   saveStep4(
@@ -123,7 +122,6 @@ export class VehicleController {
     return this.vehicleService.step4_estimate_price(tokenPayloadDto.sub);
   }
 
-
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('finalize')
   finalize(
@@ -131,4 +129,13 @@ export class VehicleController {
   ) {
     return this.vehicleService.finalize(tokenPayloadDto.sub);
   }
+
+  @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
+  @Get('current-draft')
+  get_current_draft(
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+  ){
+    return this.vehicleService.getCurrentDraft(tokenPayloadDto.sub);
+  }
+
 }

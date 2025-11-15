@@ -490,45 +490,45 @@ export class VehicleService {
     }
 
     const user = await this.usersService.findUserEntityById(user_Id);
-    
+
     // --- 2. Extrair dados do rascunho
     const { step1: createVehicleDto, step2: conductorsDtoArray, step3: imagesDataArray } = draft;
-    
-    
+
+
     // --- salva o veiculo no banco
-    
-    const {motorization, ...rest} = draft.step1;
-    
+
+    const { motorization, ...rest } = draft.step1;
+
     const vehiclePayload = {
       ...rest,
       motorization: MotorizationTypeReverseMap[motorization],
       userId: user
     };
-    
+
     const vehicleInstance = this.vehicleRepository.create(vehiclePayload);
     const savedVehicle = await this.vehicleRepository.save(vehicleInstance);
-    
+
     // --- salva condutores no banco
-    
+
     const conductorsDraft = draft.step2;
 
     const assignConductorsDto: AssignConductorsDto = {
       id_vehicle: savedVehicle.id,
       conductors: conductorsDraft
     };
-    
-    const savedConductors = await this.assignConductors(assignConductorsDto,user_Id);
+
+    const savedConductors = await this.assignConductors(assignConductorsDto, user_Id);
 
     // --- salva o insurance ...
-    
+
     const estimated_price: number = draft.estimated_price_step4;
-    
+
     const insurancePayload: CreateInsuranceDto = {
       user: user,
       vehicle: savedVehicle,
       estimated_price: estimated_price
     };
-    
+
     const insurance = await this.insuranceService.create(insurancePayload);
 
     await this.dataSource.transaction(async (manager) => {
@@ -545,7 +545,7 @@ export class VehicleService {
 
     await this.cacheManager.del(key);
 
-    const {userId, ...restVehicle} = savedVehicle
+    const { userId, ...restVehicle } = savedVehicle
 
     return {
       vehicle: restVehicle,
@@ -555,7 +555,28 @@ export class VehicleService {
   }
 
 
+  async getCurrentDraft(userId: number) {
+    const key = this.getDraftKey(userId);
+    const draft = await this.cacheManager.get<VehicleDrafts>(key);
 
+    if (!draft) {
+      return {
+        nextStep: 1,
+        draft: null
+      };
+    }
+
+    let nextStep: any = 1;
+    if (draft.step1) nextStep = 2;
+    if (draft.step2) nextStep = 3;
+    if (draft.step3) nextStep = 4;
+    if (draft.estimated_price_step4) nextStep = 'finalize';
+
+    return {
+      nextStep: nextStep,
+      draft: draft
+    };
+  }
 
 
   // -- metodos auxiliares para estimar o preco -- \\
