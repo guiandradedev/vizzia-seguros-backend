@@ -16,6 +16,7 @@ import { FilesModule } from 'src/files/files.module';
 import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
+import { InsuranceModule } from 'src/insurance/insurance.module';
 
 @Module({
   imports: [
@@ -35,7 +36,7 @@ import { redisStore } from 'cache-manager-redis-store';
         database: configService.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Caminho corrigido para as entidades
         synchronize: true, // Em desenvolvimento, pode ser true. Em produção, use migrações.
-        autoLoadEntities: true,
+        autoLoadEntities: false,
         dropSchema: true,
       })
     }),
@@ -57,6 +58,7 @@ import { redisStore } from 'cache-manager-redis-store';
     VehicleModule,
     FilesModule,
     ConductorModule,
+    InsuranceModule
   ],
   controllers: [AppController],
   providers: [AppService],

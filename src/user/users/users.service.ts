@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
@@ -12,6 +12,8 @@ import { CreateUserTelephoneDto } from 'src/user/user_telephone/dto/create-user_
 import 'multer';
 import { AuthService } from 'src/auth/auth_jwt/auth.service';
 import { VehicleService } from 'src/vehicle/vehicle.service';
+import { InsuranceService } from 'src/insurance/insurance.service';
+import { Insurance } from 'src/insurance/entities/insurance.entity';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +24,9 @@ export class UsersService {
 
     private readonly userTelephoneService: UserTelephoneService,
     private readonly userAddressService: UserAddressService,
+    private readonly insuranceService: InsuranceService,
+
+    @Inject(forwardRef(() => VehicleService))
     private readonly vehicleService: VehicleService,
 
     @Inject(forwardRef(() => AuthService))
@@ -32,16 +37,9 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await this.hashingService.hash(createUserDto.passwordHash);
 
-    const userPayload = {
-      name: createUserDto.name,
-      email: createUserDto.email,
-      passwordHash: hashedPassword,
-      cnhNumber: createUserDto.cnhNumber,
-      birthDate: createUserDto.birthDate,
-      status: createUserDto.status,
-      cnhIssueDate: createUserDto.cnhIssueDate,
-      cpf: createUserDto.cpf,
-    };
+    const userPayload: UserDto = createUserDto;
+
+    userPayload.passwordHash = await this.hashingService.hash(userPayload.passwordHash);
 
     const savedUser = this.userRepository.create(userPayload);
     await this.userRepository.save(savedUser);
@@ -131,9 +129,11 @@ export class UsersService {
   async me(id: number) {
     const user = await this.findOne(id);
     let vehicles: any[];
+    let insurances: Insurance[] = [];
 
     try {
       vehicles = await this.vehicleService.findAllVehiclesByUser(id);
+      insurances = await this.insuranceService.findAll_by_user(id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         vehicles = [];
@@ -142,9 +142,11 @@ export class UsersService {
       }
     }
 
+
     return {
       ...user,
       vehicles,
+      insurances
     };
   }
 }

@@ -49,9 +49,6 @@ export class Address {
     @IsNotEmpty()
     @IsString()
     cep: string;
-
-    @Column({enum: ParkType})
-    park_type: ParkType
 }
 
 

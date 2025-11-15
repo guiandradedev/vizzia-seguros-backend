@@ -2,6 +2,8 @@ import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min }
 import { MotorizationType } from "../enums/motorization-types.enum";
 import { Brands } from "../enums/brand.enum";
 import { TransmissionType } from "../enums/transmission-type.enum";
+import { ParkType } from "src/address/enums/park_type.enum";
+import { VehicleUseType } from "../enums/vehicle_use-types.enum";
 
 export class CreateVehicleDto {
     @IsString()
@@ -16,7 +18,7 @@ export class CreateVehicleDto {
     @IsNotEmpty()
     color: string;
 
-    @IsString()
+    @IsNumber()
     @IsNotEmpty()
     year: number;
 
@@ -35,12 +37,15 @@ export class CreateVehicleDto {
     @IsEnum(TransmissionType)
     transmission: TransmissionType;
 
-    @IsOptional()
-    photos?: any;
+    // @IsOptional()
+    // photos?: any;
 
-    @IsString()
-    usage: string;
+    @IsEnum(VehicleUseType)
+    use_type: VehicleUseType;
 
     @IsNumber()
-    fipe_moment: number;
+    fipe: number;
+
+    @IsEnum(ParkType)
+    park_type: ParkType;
 }

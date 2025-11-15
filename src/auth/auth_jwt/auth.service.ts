@@ -28,6 +28,7 @@ export class AuthService {
 
         const user = await this.usersService.findByEmail(loginDto.email);
 
+
         if (user) {
             passwordIsValid = await this.hashingService.compare(loginDto.password, user.passwordHash);
         }
