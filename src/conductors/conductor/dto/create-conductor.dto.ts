@@ -1,10 +1,12 @@
-import { IsNotEmpty, IsDateString, IsEmail, IsString, IsOptional } from "class-validator";
+import { IsNotEmpty, IsDateString, IsEmail, IsString, IsOptional, IsEnum, IsNumber } from "class-validator";
 import { IsCnh } from "src/validators/is-cnh.decorator";
 import { IsCpf } from "src/validators/is-cpf.decorator";
 import { Transform } from "class-transformer";
 import { CreateTelephoneDto } from "src/telephone/dto/create-telephone.dto";
+import { GenderTypes } from "src/user/users/enums/gender-type.enum";
+import { MaritalStatusType } from "src/user/users/enums/marital_status-Type.enum";
 
-export class CreateConductorDto extends CreateTelephoneDto{
+export class CreateConductorDto extends CreateTelephoneDto {
 
     @IsString()
     @IsNotEmpty()
@@ -40,4 +42,13 @@ export class CreateConductorDto extends CreateTelephoneDto{
     @IsString()
     @IsOptional()
     relationship?: string;
+
+    @IsEnum(GenderTypes)
+    gender: GenderTypes;
+
+    @IsEnum(MaritalStatusType)
+    marital_status: MaritalStatusType;
+
+    @IsNumber()
+    age: number;
 }

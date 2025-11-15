@@ -3,35 +3,38 @@ import { User } from "src/user/users/entities/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { VehicleImage } from "./vehicle-image.entity";
 import { MotorizationType } from "../enums/motorization-types.enum";
+import { TransmissionType } from "../enums/transmission-type.enum";
+import { VehicleUseType } from "../enums/vehicle_use-types.enum";
+import { Brands } from "../enums/brand.enum";
+import { ParkType } from "src/address/enums/park_type.enum";
 
 @Entity('vehicle')
 export class Vehicle {
 
-    @PrimaryGeneratedColumn({name: 'id_vehicle', type: 'int'})
+    @PrimaryGeneratedColumn({ name: 'id_vehicle', type: 'int' })
     id: number;
 
-    @Column({length: 7, unique: true, type: 'varchar'})
+    @Column({ length: 8, unique: true, type: 'varchar' })
     @IsString()
     plate: string;
-    
-    @Column({length: 100, type: 'varchar'})
+
+    @Column({ length: 100, type: 'varchar' })
     @IsString()
     model: string;
-    
-    @Column({length: 10, type: 'varchar'})
+
+    @Column({ length: 100, type: 'varchar' })
     @IsString()
     color: string;
-    
-    @Column({type: 'int'})
+
+    @Column({ type: 'int' })
     year: number;
-    
-    @Column({type: 'varchar'})
+
+    @Column({ type: 'varchar' })
     @IsString()
     odometer: string;
-    
-    @Column({length: 10, type: 'varchar'})
-    @IsString()
-    brand: string;
+
+    @Column({ enum: Brands, type: 'enum' })
+    brand: Brands;
 
     @Column({
         type: 'enum',
@@ -39,17 +42,32 @@ export class Vehicle {
         nullable: false,
     })
     @IsString()
-    motorization: string;
+    motorization: MotorizationType;
 
-    @Column({type: 'int', default: 1})
-    @Max(3)
-    @Min(1)
-    state: number;
-    
-    @ManyToOne(() => User, {onDelete: 'CASCADE', eager: true, nullable: false})
-    @JoinColumn({name: 'id_user'})
+    @Column({
+        type: 'enum',
+        enum: TransmissionType,
+        nullable: false
+    })
+    transmission: TransmissionType;
+
+    @Column({
+        type: 'enum',
+        enum: VehicleUseType,
+        nullable: false
+    })
+    use_type: VehicleUseType;
+
+    @ManyToOne(() => User, { onDelete: 'CASCADE', eager: true, nullable: false })
+    @JoinColumn({ name: 'id_user' })
     userId: User;
 
     @OneToMany(() => VehicleImage, (image) => image.vehicle)
     images: VehicleImage[];
+
+    @Column({ type: 'float' })
+    fipe: number;
+
+    @Column({ enum: ParkType })
+    park_type: ParkType;
 }

@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsNumberString, IsString, MaxLength, MinLength } from "class-validator";
 import { User } from "src/user/users/entities/user.entity";
 import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { ParkType } from "../enums/park_type.enum";
 
 @Entity('address')
 export class Address {

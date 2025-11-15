@@ -7,6 +7,7 @@ import { UserTelephoneModule } from 'src/user/user_telephone/user_telephone.modu
 import { UserAddressModule } from 'src/user/user_address/user_address.module';
 import { AuthModule } from 'src/auth/auth_jwt/auth.module';
 import { VehicleModule } from 'src/vehicle/vehicle.module';
+import { InsuranceModule } from 'src/insurance/insurance.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { VehicleModule } from 'src/vehicle/vehicle.module';
     UserTelephoneModule,
     UserAddressModule,
     forwardRef(() => AuthModule),
-    VehicleModule
+    forwardRef(() => VehicleModule),
+    InsuranceModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
