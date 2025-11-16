@@ -27,8 +27,7 @@ export class CreateVehicleDto {
     odometer: string;
 
     @IsNotEmpty()
-    @IsEnum(Brands)
-    brand: Brands;
+    brand: number;
 
     // @IsNumber()
     @IsNotEmpty()
@@ -37,8 +36,44 @@ export class CreateVehicleDto {
     @IsEnum(TransmissionType)
     transmission: TransmissionType;
 
-    // @IsOptional()
-    // photos?: any;
+    @IsEnum(VehicleUseType)
+    use_type: VehicleUseType;
+
+    @IsEnum(ParkType)
+    park_type: ParkType;
+}
+
+export class CreateVehicleDraft {
+    @IsString()
+    @IsNotEmpty()
+    plate: string;
+
+    @IsString()
+    @IsNotEmpty()
+    model: string;
+
+    @IsString()
+    @IsNotEmpty()
+    color: string;
+
+    @IsNumber()
+    @IsNotEmpty()
+    year: number;
+
+    @IsString()
+    @IsNotEmpty()
+    odometer: string;
+
+    @IsNotEmpty()
+    // @IsEnum(Brands)
+    brand: number;
+
+    // @IsNumber()
+    @IsNotEmpty()
+    motorization: number;
+
+    @IsEnum(TransmissionType)
+    transmission: TransmissionType;
 
     @IsEnum(VehicleUseType)
     use_type: VehicleUseType;

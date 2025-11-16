@@ -1,5 +1,5 @@
-import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateVehicleDto } from './dto/create-vehicle.dto';
+import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { CreateVehicleDraft, CreateVehicleDto } from './dto/create-vehicle.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Vehicle } from './entities/vehicle.entity';
 import { Repository } from 'typeorm';
@@ -25,6 +25,10 @@ import { UsersService } from 'src/user/users/users.service';
 import { CreateInsuranceDto } from 'src/insurance/dto/create-insurance.dto';
 import { InsuranceService } from 'src/insurance/insurance.service';
 import { Insurance } from 'src/insurance/entities/insurance.entity';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
+import { response } from 'express';
 
 @Injectable()
 export class VehicleService {
@@ -66,6 +70,10 @@ export class VehicleService {
     private readonly conductorService: ConductorService,
 
     private readonly insuranceService: InsuranceService,
+
+    private readonly hettpService: HttpService,
+
+    private readonly configService: ConfigService,
 
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
@@ -320,9 +328,55 @@ export class VehicleService {
   }
 
   async saveStep1_create_vehicle(userId: number, createVehicleDto: CreateVehicleDto) {
+    // ! post, body: { "brand_code": "brand", "client_car_model": "model", "year": "year", "motorization": "motorization"
+
+    let createVehicleDraft: CreateVehicleDraft;
+
+    try {
+      const apiIp = this.configService.get<String>('AI_PYTHON_SERVER_IP');
+      const apiPort = this.configService.get<String>('AI_PYTHON_SERVER_PORT');
+
+      const apiUrl = `http://${apiIp}:${apiPort}/get_fipe`;
+
+      const requestBody = {
+        brand_code: String(createVehicleDto.brand),
+        client_car_model: createVehicleDto.model,
+        year: createVehicleDto.year,
+        motorization: createVehicleDto.motorization,
+      };
+
+      const response = await firstValueFrom(this.hettpService.post(apiUrl, requestBody));
+
+      console.log('respota da API: ', response.data);
+
+      const responseData = response.data;
+
+      const valorString = responseData.Valor;
+
+      const valorNumerico = parseFloat(
+        valorString
+          .replace("R$ ", "")
+          .replace(/\./g, "")
+          .replace(",", ".")
+      );
+
+      createVehicleDraft = {
+        ...createVehicleDto,
+        fipe: valorNumerico,
+      };
+
+    } catch (error) {
+      console.error('Erro ao chamar a API externa:', error.response?.data || error.message);
+
+      throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
+    }
     const key = this.getDraftKey(userId);
-    const draft: VehicleDrafts = { step1: createVehicleDto };
+
+
+    const draft: VehicleDrafts = { step1: createVehicleDraft };
+
     await this.cacheManager.set(key, draft);
+
     return draft;
   }
 
@@ -416,7 +470,6 @@ export class VehicleService {
     }
 
     // 2. Extrair dados
-    // NOTA: Assumindo que os DTOs têm os campos necessários (brand, fipe, age, gender, etc.)
     const vehicle = draft.step1;
     const user = await this.usersService.findOne(userID);
 
@@ -642,6 +695,9 @@ export class VehicleService {
     // Lógica simples do Python, pode ser expandida
     return 0.6;
   }
+
+  // ! chama api do xines (carro), sai valor do location_factor(peso) e (recorrencia de furtos) 
+  // ! 
 
   private calculateFullYears(issueDate: Date): number {
     // Garante que a entrada é um objeto Date

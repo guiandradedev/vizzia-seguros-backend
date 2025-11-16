@@ -1,5 +1,5 @@
 import { CreateConductorDto } from "src/conductors/conductor/dto/create-conductor.dto";
-import { CreateVehicleDto } from "../dto/create-vehicle.dto";
+import { CreateVehicleDraft, CreateVehicleDto } from "../dto/create-vehicle.dto";
 
 export interface IStep3Data {
   path: string;
@@ -7,7 +7,7 @@ export interface IStep3Data {
 }
 
 export class VehicleDrafts {
-    step1?: CreateVehicleDto;
+    step1?: CreateVehicleDraft;
     step2?: CreateConductorDto[];
     step3?: IStep3Data[];
     estimated_price_step4?: number;

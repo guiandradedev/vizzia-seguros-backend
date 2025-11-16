@@ -8,6 +8,7 @@ import { VehicleImage } from './entities/vehicle-image.entity';
 import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { InsuranceModule } from 'src/insurance/insurance.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { InsuranceModule } from 'src/insurance/insurance.module';
     forwardRef(() => UsersModule),
     // CacheModule,
     InsuranceModule,
+    HttpModule,
   ],
   controllers: [VehicleController],
   providers: [VehicleService],

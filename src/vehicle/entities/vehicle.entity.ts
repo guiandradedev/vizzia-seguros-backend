@@ -33,8 +33,8 @@ export class Vehicle {
     @IsString()
     odometer: string;
 
-    @Column({ enum: Brands, type: 'enum' })
-    brand: Brands;
+    @Column()
+    brand: number;
 
     @Column({
         type: 'enum',
