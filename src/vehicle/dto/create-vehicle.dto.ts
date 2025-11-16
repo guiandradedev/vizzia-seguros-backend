@@ -4,6 +4,7 @@ import { Brands } from "../enums/brand.enum";
 import { TransmissionType } from "../enums/transmission-type.enum";
 import { ParkType } from "src/address/enums/park_type.enum";
 import { VehicleUseType } from "../enums/vehicle_use-types.enum";
+import { Type } from "class-transformer";
 
 export class CreateVehicleDto {
     @IsString()
@@ -20,6 +21,7 @@ export class CreateVehicleDto {
 
     @IsNumber()
     @IsNotEmpty()
+    @Type(() => Number)
     year: number;
 
     @IsString()
@@ -27,10 +29,13 @@ export class CreateVehicleDto {
     odometer: string;
 
     @IsNotEmpty()
+    @Type(() => Number)
     brand: number;
 
+    
     // @IsNumber()
     @IsNotEmpty()
+    @Type(() => Number)
     motorization: number;
 
     @IsEnum(TransmissionType)

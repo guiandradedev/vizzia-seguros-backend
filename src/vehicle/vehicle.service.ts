@@ -327,8 +327,13 @@ export class VehicleService {
     return { message: 'Vehicle deleted successfully' };
   }
 
-  async saveStep1_create_vehicle(userId: number, createVehicleDto: CreateVehicleDto) {
-    // ! post, body: { "brand_code": "brand", "client_car_model": "model", "year": "year", "motorization": "motorization"
+  async saveStep1_create_vehicle(
+    userId: number, 
+    createVehicleDto: CreateVehicleDto,
+    photo: Express.Multer.File,
+    photoType: string,
+  ) {
+    // ! post, body: { "brand_code": "brand", "client_car_model": "model", "year": "year", "motorization": "motorization
 
     let createVehicleDraft: CreateVehicleDraft;
 
@@ -370,10 +375,25 @@ export class VehicleService {
 
       throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
     }
+    
+    if (!photo) {
+      throw new BadRequestException('A foto inicial (campo "photo") é obrigatória na etapa 1.');
+    }
+
+    // 2. Cria os dados da Etapa 3 com a foto inicial
+    const step3Data: IStep3Data[] = [{
+      path: photo.path,
+      type: photoType // Define o tipo como 'initial'
+    }];
+    // --- Fim da Nova Lógica de Foto ---
+
     const key = this.getDraftKey(userId);
-
-
-    const draft: VehicleDrafts = { step1: createVehicleDraft };
+    
+    // 3. Salva step1 e step3 no rascunho
+    const draft: VehicleDrafts = { 
+      step1: createVehicleDraft,
+      step3: step3Data // Salva a foto inicial
+    };
 
     await this.cacheManager.set(key, draft);
 
@@ -441,13 +461,21 @@ export class VehicleService {
 
     // 2. Criar os dados da Etapa 3
     // O Multer já salvou os arquivos, só precisamos dos caminhos e tipos.
-    const step3Data: IStep3Data[] = photos.map((file, idx) => ({
+    const newPhotosData: IStep3Data[] = photos.map((file, idx) => ({
       path: file.path,
       type: getTypeForFile(file, idx),
     }));
 
-    // 3. Salvar o rascunho completo no Redis
-    const updatedDraft: VehicleDrafts = { ...draft, step3: step3Data };
+    // --- Início da Lógica de Combinação ---
+    // 3. Pega as fotos existentes (da Etapa 1)
+    const existingPhotos = draft.step3 || [];
+
+    // 4. Combina as fotos existentes com as novas
+    const allPhotosData = [...existingPhotos, ...newPhotosData];
+    // --- Fim da Lógica de Combinação ---
+
+    // 5. Salva o rascunho com o array de fotos combinado
+    const updatedDraft: VehicleDrafts = { ...draft, step3: allPhotosData };
     await this.cacheManager.set(key, updatedDraft);
 
     return updatedDraft;
@@ -467,6 +495,9 @@ export class VehicleService {
     }
     if (!draft.step2 || draft.step2.length === 0) {
       throw new BadRequestException('Dados do condutor (Etapa 2) estão faltando no rascunho.');
+    }
+    if (!draft.step3 || draft.step3.length <= 1) {
+      throw new BadRequestException('Falta epata 3.');
     }
 
     // 2. Extrair dados

@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFiles, UploadedFile, BadRequestException } from '@nestjs/common';
 import { VehicleService } from './vehicle.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { AuthTokenGuard } from 'src/auth/auth_jwt/guards/auth-token.guard';
 import { TokenPayloadParam } from 'src/auth/auth_jwt/params/token-payload.param';
 import { TokenPayloadDto } from 'src/auth/auth_jwt/dto/token-payload.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/files/multer/config/multer.config';
 import { RoutePolicyGuard } from 'src/roles/guard/route-policy.guard';
 import { SetRoutePolicy } from 'src/roles/decorators/set-route-policy.decorator';
@@ -86,11 +86,19 @@ export class VehicleController {
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('step/1')
+  @UseInterceptors(FileInterceptor('photo', multerConfig))
   saveStep1(
     @Body() createVehicleDto: CreateVehicleDto,
+    @Body('photoType') photoType: string ,
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+    @UploadedFile() photo: Express.Multer.File,
   ) {
-    return this.vehicleService.saveStep1_create_vehicle(tokenPayloadDto.sub, createVehicleDto);
+
+    if (!photo) {
+      throw new BadRequestException('A foto inicial (campo "photo") é obrigatória na etapa 1.');
+    }
+
+    return this.vehicleService.saveStep1_create_vehicle(tokenPayloadDto.sub, createVehicleDto, photo, photoType);
   }
 
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
