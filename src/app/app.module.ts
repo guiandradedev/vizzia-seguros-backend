@@ -17,6 +17,8 @@ import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
 import { InsuranceModule } from 'src/insurance/insurance.module';
+import KeyvRedis, { Keyv } from '@keyv/redis';
+import { CacheableMemory } from 'cacheable';
 
 @Module({
   imports: [
@@ -40,12 +42,25 @@ import { InsuranceModule } from 'src/insurance/insurance.module';
         dropSchema: true,
       })
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
-      ttl: 60 * 60 * 24,
+      imports: [ConfigModule], // 1. Importe o ConfigModule
+      inject: [ConfigService],  // 2. Injete o ConfigService
+
+      // 3. Use o service para construir a string de conexão
+      useFactory: async (configService: ConfigService) => {
+        const host = configService.get<string>('REDIS_HOST');
+        const port = configService.get<number>('REDIS_PORT');
+        
+        return {
+          stores: [
+            new Keyv({
+              store: new CacheableMemory({ttl: (60 * 60 * 24), lruSize: 5000}),
+            }),
+            new KeyvRedis(`redis://${host}:${port}`),
+          ]
+        };
+      },
     }),
     AuthModule,
     UsersModule,

@@ -722,8 +722,10 @@ export class VehicleService {
     }
   }
 
-  private location_factor(location: string): number {
+  private get_crime_amount(location: string): number {
     // Lógica simples do Python, pode ser expandida
+
+    // ! cep, dis, car_model
     return 0.6;
   }
 
