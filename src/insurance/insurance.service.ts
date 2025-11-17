@@ -99,7 +99,7 @@ export class InsuranceService {
     if (!insurance)
       throw new NotFoundException('seguro nao encontrado');
 
-    return insurance;
+    return insurance[0];
   }
 
   async findAllPending() {
