@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInsuranceDto } from './dto/create-insurance.dto';
 import { UpdateInsuranceDto } from './dto/update-insurance.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Insurance } from './entities/insurance.entity';
 import { Repository } from 'typeorm';
 import { Vehicle } from 'src/vehicle/entities/vehicle.entity';
+import { EvaluateInsuranceDto } from './dto/evaluate_insurance.dto';
+import { Status } from './enum/status.enum';
 
 @Injectable()
 export class InsuranceService {
@@ -47,7 +49,7 @@ export class InsuranceService {
     
     insurance[0].vehicle = vehicle;
 
-    return insurance;
+    return insurance[0];
   }
 
   update(id: number, updateInsuranceDto: UpdateInsuranceDto) {
@@ -98,5 +100,56 @@ export class InsuranceService {
       throw new NotFoundException('seguro nao encontrado');
 
     return insurance;
+  }
+
+  async findAllPending() {
+    const insurances = await this.insuranceRepository.find({
+      where: {
+        status: Status.Pending,
+      },
+      relations: ['vehicle'],
+    });
+
+    if (!insurances || !insurances.length) {
+      throw new NotFoundException('Nenhum seguro pendente foi encontrado');
+    }
+
+    const insurancesWithoutUser: any = [];
+
+    insurances.forEach(ins => {
+      const { userId, ...rest } = ins.vehicle;
+
+      const aux = {
+        ...ins,
+        vehicle: rest,
+      };
+
+      insurancesWithoutUser.push(aux);
+    });
+
+    return insurancesWithoutUser;
+  }
+
+
+  async evaluate_insurance(evaluateInsuranceDto: EvaluateInsuranceDto) {
+    const { id_insurance, status } = evaluateInsuranceDto;
+
+    const insurance = await this.insuranceRepository.findOneBy({ 
+      id_insurance: id_insurance 
+    });
+
+    if (!insurance) {
+      throw new NotFoundException('Seguro não encontrado');
+    }
+
+    if (insurance.status !== Status.Pending) {
+      throw new BadRequestException(
+        `Este seguro não pode ser avaliado, pois seu status já é "${Status[insurance.status]}"`
+      );
+    }
+
+    insurance.status = status;
+
+    return await this.insuranceRepository.save(insurance);
   }
 }

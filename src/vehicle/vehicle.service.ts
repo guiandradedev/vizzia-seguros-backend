@@ -24,11 +24,10 @@ import { VehicleUseWeight } from './enums/vehicle_use-types.enum';
 import { UsersService } from 'src/user/users/users.service';
 import { CreateInsuranceDto } from 'src/insurance/dto/create-insurance.dto';
 import { InsuranceService } from 'src/insurance/insurance.service';
-import { Insurance } from 'src/insurance/entities/insurance.entity';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { response } from 'express';
+import { AddressService } from 'src/address/address.service';
 
 @Injectable()
 export class VehicleService {
@@ -74,6 +73,8 @@ export class VehicleService {
     private readonly hettpService: HttpService,
 
     private readonly configService: ConfigService,
+
+    private readonly addressService: AddressService,
 
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
@@ -328,7 +329,7 @@ export class VehicleService {
   }
 
   async saveStep1_create_vehicle(
-    userId: number, 
+    userId: number,
     createVehicleDto: CreateVehicleDto,
     photo: Express.Multer.File,
     photoType: string,
@@ -375,7 +376,7 @@ export class VehicleService {
 
       throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
     }
-    
+
     if (!photo) {
       throw new BadRequestException('A foto inicial (campo "photo") é obrigatória na etapa 1.');
     }
@@ -388,9 +389,9 @@ export class VehicleService {
     // --- Fim da Nova Lógica de Foto ---
 
     const key = this.getDraftKey(userId);
-    
+
     // 3. Salva step1 e step3 no rascunho
-    const draft: VehicleDrafts = { 
+    const draft: VehicleDrafts = {
       step1: createVehicleDraft,
       step3: step3Data // Salva a foto inicial
     };
@@ -493,9 +494,9 @@ export class VehicleService {
     if (!draft.step1) {
       throw new BadRequestException('Dados do veículo (Etapa 1) estão faltando no rascunho.');
     }
-    if (!draft.step2 || draft.step2.length === 0) {
-      throw new BadRequestException('Dados do condutor (Etapa 2) estão faltando no rascunho.');
-    }
+    // if (!draft.step2 || draft.step2.length === 0) {
+    //   throw new BadRequestException('Dados do condutor (Etapa 2) estão faltando no rascunho.');
+    // }
     if (!draft.step3 || draft.step3.length <= 1) {
       throw new BadRequestException('Falta epata 3.');
     }
@@ -503,6 +504,7 @@ export class VehicleService {
     // 2. Extrair dados
     const vehicle = draft.step1;
     const user = await this.usersService.findOne(userID);
+    const user_address = await this.addressService.findOne(user.id);
 
     let price = 0;
 
@@ -547,16 +549,19 @@ export class VehicleService {
     price += this.gender_price * gender;
     price += this.marital_status_price * marital_status;
     price += this.license_years_price * this.calc_license_years(user_license_years);
-    price += this.location_price * 0.6; // ! mudar 
+    price += this.location_price * await this.evaluate_user_location(user_address.cep, vehicle.model); // ! mudar 
     price += this.park_price * park_user;
     price += this.vehicle_use_price * vehicle_use_user;
 
     // --- 5. Calculo dos Condutores ---
-    const conductors = draft.step2;
 
-    conductors.forEach(cond => {
-      price += this.calculate_conductors_price(cond);
-    });
+    if (draft.step2) {
+      const conductors = draft.step2;
+      conductors.forEach(cond => {
+        price += this.calculate_conductors_price(cond);
+      });
+    }
+
 
     const updatedDraft: VehicleDrafts = { ...draft, estimated_price_step4: price };
     await this.cacheManager.set(key, updatedDraft);
@@ -722,10 +727,42 @@ export class VehicleService {
     }
   }
 
-  private get_crime_amount(location: string): number {
+  private async evaluate_user_location(cep: string, car_model: string): Promise<number> {
     // Lógica simples do Python, pode ser expandida
 
     // ! cep, dis, car_model
+    try {
+      const apiIp = this.configService.get<String>('AI_PYTHON_SERVER_IP');
+      const apiPort = this.configService.get<String>('AI_PYTHON_SERVER_PORT');
+
+      const apiUrl = `http://${apiIp}:${apiPort}/estimate_details`;
+
+      const requestBody = {
+        cep: cep,
+        car_model: car_model
+      };
+
+      const response = await firstValueFrom(this.hettpService.post(apiUrl, requestBody));
+
+      console.log('respota da API: ', response.data);
+
+      const responseData = response.data;
+
+      // const valorString = responseData.Valor;
+
+      // const valorNumerico = parseFloat(
+      //   valorString
+      //     .replace("R$ ", "")
+      //     .replace(/\./g, "")
+      //     .replace(",", ".")
+      // );
+
+    } catch (error) {
+      console.error('Erro ao chamar a API externa:', error.response?.data || error.message);
+
+      throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
+    }
+
     return 0.6;
   }
 

@@ -9,6 +9,7 @@ import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { InsuranceModule } from 'src/insurance/insurance.module';
 import { HttpModule } from '@nestjs/axios';
+import { AddressModule } from 'src/address/address.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { HttpModule } from '@nestjs/axios';
     // CacheModule,
     InsuranceModule,
     HttpModule,
+    AddressModule,
   ],
   controllers: [VehicleController],
   providers: [VehicleService],
