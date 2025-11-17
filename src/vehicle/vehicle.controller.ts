@@ -20,6 +20,7 @@ import { CreateConductorDto } from 'src/conductors/conductor/dto/create-conducto
 export class VehicleController {
   constructor(private readonly vehicleService: VehicleService) { }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post()
   @UseInterceptors(FilesInterceptor('photos', 5, multerConfig)) // aceita múltiplas fotos no campo 'photos'
@@ -32,6 +33,7 @@ export class VehicleController {
     return this.vehicleService.create(createVehicleDto, tokenPayloadDto.sub, files, photosMeta);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('images')
   @UseInterceptors(FilesInterceptor('photos', 5, multerConfig)) // arquivos no campo 'photos'
@@ -43,6 +45,7 @@ export class VehicleController {
     return this.vehicleService.addImages(body.vehicle_id, files, body.photos);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('conductors')
   assignConductors(
@@ -53,6 +56,7 @@ export class VehicleController {
     return this.vehicleService.assignConductors(assignConductorsDto, tokenPayloadDto.sub);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Get()
   findAll(
@@ -69,12 +73,14 @@ export class VehicleController {
     return this.vehicleService.findOne(+id);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVehicleDto: UpdateVehicleDto) {
     // return this.vehicleService.update(+id, updateVehicleDto);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
   @Delete()
   remove(
@@ -84,12 +90,13 @@ export class VehicleController {
     return this.vehicleService.deleteVehicle(id_vehicle, tokenPayloadDto.sub);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('step/1')
   @UseInterceptors(FileInterceptor('photo', multerConfig))
   saveStep1(
     @Body() createVehicleDto: CreateVehicleDto,
-    @Body('photoType') photoType: string ,
+    @Body('photoType') photoType: string,
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
     @UploadedFile() photo: Express.Multer.File,
   ) {
@@ -101,6 +108,7 @@ export class VehicleController {
     return this.vehicleService.saveStep1_create_vehicle(tokenPayloadDto.sub, createVehicleDto, photo, photoType);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('step/2')
   saveStep2(
@@ -111,6 +119,7 @@ export class VehicleController {
     return this.vehicleService.saveStep2_assign_conductors(tokenPayloadDto.sub, createConductors);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('step/3')
   @UseInterceptors(FilesInterceptor('photos', 5, multerConfig))
@@ -122,6 +131,7 @@ export class VehicleController {
     return this.vehicleService.saveStep3_photos(tokenPayloadDto.sub, files, photosMeta);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('step/4')
   saveStep4(
@@ -130,6 +140,7 @@ export class VehicleController {
     return this.vehicleService.step4_estimate_price(tokenPayloadDto.sub);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Post('finalize')
   finalize(
@@ -138,11 +149,12 @@ export class VehicleController {
     return this.vehicleService.finalize(tokenPayloadDto.sub);
   }
 
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.user, RoutePolicies.admin])
   @Get('current-draft')
   get_current_draft(
     @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
-  ){
+  ) {
     return this.vehicleService.getCurrentDraft(tokenPayloadDto.sub);
   }
 

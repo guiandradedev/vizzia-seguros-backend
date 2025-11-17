@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,6 +9,7 @@ import { AuthModule } from 'src/auth/auth_jwt/auth.module';
 import { VehicleModule } from 'src/vehicle/vehicle.module';
 import { InsuranceModule } from 'src/insurance/insurance.module';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([User]),

@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
@@ -7,6 +7,7 @@ import { REQUEST_TOKEN_PAYLOAD_KEY } from '../auth.constants';
 import { TokenTypes } from 'src/auth/enums/tokenTypes.enum';
 import { Reflector } from '@nestjs/core';
 import { ALLOWED_TOKEN_TYPES_KEY } from 'src/auth/decorators/allowed-token-types.decorator';
+import { UsersService } from 'src/user/users/users.service';
 
 @Injectable()
 export class AuthTokenGuard implements CanActivate {
@@ -14,7 +15,10 @@ export class AuthTokenGuard implements CanActivate {
     private readonly jwtservice: JwtService,
     @Inject(jwtConfig.KEY)
     private readonly jwtConfiguration: ConfigType<typeof import('../config/jwt.config').default>,
-    private readonly reflector: Reflector
+    private readonly reflector: Reflector,
+
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
 
   ) {}
 
@@ -40,6 +44,11 @@ export class AuthTokenGuard implements CanActivate {
 
       if (!allowedTokenTypes.includes(payload.type))
         throw new UnauthorizedException('Token invalido');
+
+      const user = await this.usersService.findUserEntityById(payload.sub);
+
+      if (!user)
+          throw new UnauthorizedException('user invalido');
 
       request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
 
