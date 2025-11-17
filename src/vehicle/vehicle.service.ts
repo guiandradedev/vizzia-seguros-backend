@@ -62,6 +62,8 @@ export class VehicleService {
 
   private readonly vehicle_use_price = 200;
 
+  private readonly recorrency_price = 1000;
+
   // ! fim da declaracao ! \\
 
 
@@ -334,7 +336,6 @@ export class VehicleService {
     photo: Express.Multer.File,
     photoType: string,
   ) {
-    // ! post, body: { "brand_code": "brand", "client_car_model": "model", "year": "year", "motorization": "motorization
 
     let createVehicleDraft: CreateVehicleDraft;
 
@@ -352,8 +353,6 @@ export class VehicleService {
       };
 
       const response = await firstValueFrom(this.hettpService.post(apiUrl, requestBody));
-
-      console.log('respota da API: ', response.data);
 
       const responseData = response.data;
 
@@ -381,19 +380,17 @@ export class VehicleService {
       throw new BadRequestException('A foto inicial (campo "photo") é obrigatória na etapa 1.');
     }
 
-    // 2. Cria os dados da Etapa 3 com a foto inicial
     const step3Data: IStep3Data[] = [{
       path: photo.path,
-      type: photoType // Define o tipo como 'initial'
+      type: photoType
     }];
     // --- Fim da Nova Lógica de Foto ---
 
     const key = this.getDraftKey(userId);
 
-    // 3. Salva step1 e step3 no rascunho
     const draft: VehicleDrafts = {
       step1: createVehicleDraft,
-      step3: step3Data // Salva a foto inicial
+      step3: step3Data
     };
 
     await this.cacheManager.set(key, draft);
@@ -460,18 +457,14 @@ export class VehicleService {
     };
     // --- Fim: Lógica de Fotos ---
 
-    // 2. Criar os dados da Etapa 3
-    // O Multer já salvou os arquivos, só precisamos dos caminhos e tipos.
     const newPhotosData: IStep3Data[] = photos.map((file, idx) => ({
       path: file.path,
       type: getTypeForFile(file, idx),
     }));
 
     // --- Início da Lógica de Combinação ---
-    // 3. Pega as fotos existentes (da Etapa 1)
     const existingPhotos = draft.step3 || [];
 
-    // 4. Combina as fotos existentes com as novas
     const allPhotosData = [...existingPhotos, ...newPhotosData];
     // --- Fim da Lógica de Combinação ---
 
@@ -487,21 +480,16 @@ export class VehicleService {
     const key = this.getDraftKey(userID);
     const draft = await this.cacheManager.get<VehicleDrafts>(key);
 
-    // 1. Validar Rascunho
     if (!draft) {
       throw new NotFoundException('Nenhum rascunho de veículo encontrado.');
     }
     if (!draft.step1) {
       throw new BadRequestException('Dados do veículo (Etapa 1) estão faltando no rascunho.');
     }
-    // if (!draft.step2 || draft.step2.length === 0) {
-    //   throw new BadRequestException('Dados do condutor (Etapa 2) estão faltando no rascunho.');
-    // }
     if (!draft.step3 || draft.step3.length <= 1) {
       throw new BadRequestException('Falta epata 3.');
     }
 
-    // 2. Extrair dados
     const vehicle = draft.step1;
     const user = await this.usersService.findOne(userID);
     const user_address = await this.addressService.findOne(user.id);
@@ -511,7 +499,6 @@ export class VehicleService {
     // --- 3. Cálculo do Veículo ---
     const motorizationString = MotorizationTypeReverseMap[vehicle.motorization];
 
-    // Fatores (com validação)
     const brand_user = BrandsWeight[Brands[vehicle.brand] as keyof typeof BrandsWeight];
     if (brand_user === undefined) throw new BadRequestException(`Marca inválida: ${vehicle.brand}`);
 
@@ -521,7 +508,6 @@ export class VehicleService {
     const transmission_user = TransmissionWeight[vehicle.transmission as keyof typeof TransmissionWeight];
     if (transmission_user === undefined) throw new BadRequestException(`Tipo de transmissão inválida: ${vehicle.transmission}`);
 
-    // Preço do Veículo
     price += this.brand_price * brand_user;
     price += this.fuel_price * fuel_type_user;
     price += this.transmission_price * transmission_user;
@@ -544,12 +530,11 @@ export class VehicleService {
 
     const user_license_years = this.calculateFullYears(user.cnhIssueDate);
 
-    // Preço do user
     price += this.age_price * this.calc_age(user.age);
     price += this.gender_price * gender;
     price += this.marital_status_price * marital_status;
     price += this.license_years_price * this.calc_license_years(user_license_years);
-    price += this.location_price * await this.evaluate_user_location(user_address.cep, vehicle.model); // ! mudar 
+    price += await this.evaluate_user_location(user_address.cep, vehicle.model); // ! mudar 
     price += this.park_price * park_user;
     price += this.vehicle_use_price * vehicle_use_user;
 
@@ -561,7 +546,6 @@ export class VehicleService {
         price += this.calculate_conductors_price(cond);
       });
     }
-
 
     const updatedDraft: VehicleDrafts = { ...draft, estimated_price_step4: price };
     await this.cacheManager.set(key, updatedDraft);
@@ -728,9 +712,10 @@ export class VehicleService {
   }
 
   private async evaluate_user_location(cep: string, car_model: string): Promise<number> {
-    // Lógica simples do Python, pode ser expandida
 
     // ! cep, dis, car_model
+    let price = 0;
+
     try {
       const apiIp = this.configService.get<String>('AI_PYTHON_SERVER_IP');
       const apiPort = this.configService.get<String>('AI_PYTHON_SERVER_PORT');
@@ -748,14 +733,9 @@ export class VehicleService {
 
       const responseData = response.data;
 
-      // const valorString = responseData.Valor;
+      price = Number(responseData.car.robbery_recorrency) * this.recorrency_price;
 
-      // const valorNumerico = parseFloat(
-      //   valorString
-      //     .replace("R$ ", "")
-      //     .replace(/\./g, "")
-      //     .replace(",", ".")
-      // );
+      console.log('robbery_recorrency * recorrency_price: ', price);
 
     } catch (error) {
       console.error('Erro ao chamar a API externa:', error.response?.data || error.message);
@@ -763,21 +743,15 @@ export class VehicleService {
       throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
     }
 
-    return 0.6;
+    return price;
   }
 
-  // ! chama api do xines (carro), sai valor do location_factor(peso) e (recorrencia de furtos) 
-  // ! 
-
   private calculateFullYears(issueDate: Date): number {
-    // Garante que a entrada é um objeto Date
     const cnhDate = new Date(issueDate);
     const today = new Date();
 
-    // 1. Calcula a diferença inicial de anos
     let years = today.getFullYear() - cnhDate.getFullYear();
 
-    // 2. Obtém os meses e dias para verificar se o "aniversário" da CNH já passou este ano
     const currentMonth = today.getMonth(); // 0-11
     const issueMonth = cnhDate.getMonth(); // 0-11
 
@@ -788,7 +762,6 @@ export class VehicleService {
       years--; // Subtrai 1 ano
     }
 
-    // Garante que o resultado nunca seja negativo
     return Math.max(0, years);
   }
 }
