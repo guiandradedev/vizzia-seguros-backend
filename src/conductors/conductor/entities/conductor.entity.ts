@@ -1,7 +1,13 @@
-import { IsBoolean, IsDateString, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsString, MaxLength, MinLength } from "class-validator";
+import { IsDateString, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsNumberString, IsString, MaxLength, MinLength } from "class-validator";
 import { GenderTypes } from "src/user/users/enums/gender-type.enum";
 import { MaritalStatusType } from "src/user/users/enums/marital_status-Type.enum";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+
+export enum ConductorStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
 
 @Entity('conductor')
 export class Conductor {
@@ -61,4 +67,7 @@ export class Conductor {
     @IsEnum(MaritalStatusType)
     @Column({enum: MaritalStatusType, type: 'enum'})
     marital_status: MaritalStatusType;
+
+    @Column({enum: ConductorStatus, type: 'enum', default: ConductorStatus.PENDING})
+    status: ConductorStatus;
 }

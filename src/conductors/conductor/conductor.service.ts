@@ -3,7 +3,7 @@ import { CreateConductorDto } from './dto/create-conductor.dto';
 import { UpdateConductorDto } from './dto/update-conductor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Conductor } from './entities/conductor.entity';
+import { Conductor, ConductorStatus } from './entities/conductor.entity';
 import { VehicleConductor } from './entities/vehicle-conductor.entity';
 import { ConductorsTelephoneService } from '../conductors_telephone/conductors_telephone.service';
 import { CreateConductorsTelephoneDto } from '../conductors_telephone/dto/create-conductors_telephone.dto';
@@ -18,7 +18,7 @@ export class ConductorService {
     private readonly vehicleConductorRepository: Repository<VehicleConductor>,
 
     private readonly conductorTelephoneService: ConductorsTelephoneService,
-  ) {}
+  ) { }
 
   async create(createConductorDto: CreateConductorDto, id_vehicle: number) {
     const conductor = this.conductorRepository.create(createConductorDto);
@@ -75,5 +75,9 @@ export class ConductorService {
 
   remove(id: number) {
     return `This action removes a #${id} conductor`;
+  }
+
+  async update_entity(conductor: Conductor) {
+    await this.conductorRepository.update(conductor.id, conductor);
   }
 }
