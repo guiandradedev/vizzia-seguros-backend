@@ -7,6 +7,8 @@ import { Repository } from 'typeorm';
 import { Vehicle } from 'src/vehicle/entities/vehicle.entity';
 import { EvaluateInsuranceDto } from './dto/evaluate_insurance.dto';
 import { Status } from './enum/status.enum';
+import { ConductorService } from 'src/conductors/conductor/conductor.service';
+import { ConductorStatus } from 'src/conductors/conductor/entities/conductor.entity';
 
 @Injectable()
 export class InsuranceService {
@@ -16,6 +18,7 @@ export class InsuranceService {
     @InjectRepository(Insurance)
     private readonly insuranceRepository: Repository<Insurance>,
 
+    private readonly conductorsService: ConductorService
 
   ) { }
 
@@ -45,11 +48,22 @@ export class InsuranceService {
     if (!insurance)
       throw new NotFoundException('seguro nao encontrado');
 
-    const {userId, ...vehicle} = insurance[0].vehicle
-    
+    const { userId, ...vehicle } = insurance[0].vehicle
+
     insurance[0].vehicle = vehicle;
 
     return insurance[0];
+  }
+
+  async findOne_entity(id: number) {
+    const insurance = await this.insuranceRepository.findOneBy({
+      id_insurance: id,
+    });
+
+    if (!insurance)
+      throw new NotFoundException('seguro nao encontrado');
+
+    return insurance;
   }
 
   update(id: number, updateInsuranceDto: UpdateInsuranceDto) {
@@ -63,8 +77,8 @@ export class InsuranceService {
 
   async findAll_by_user(userId: number) {
     const insurances = await this.insuranceRepository.find({
-      where: { 
-        user: { id: userId }, 
+      where: {
+        user: { id: userId },
       },
       relations: ['vehicle'],
     });
@@ -75,7 +89,7 @@ export class InsuranceService {
     const insurancesWithoutUser: any = [];
 
     insurances.forEach(ins => {
-      const {userId, ...rest} = ins.vehicle;
+      const { userId, ...rest } = ins.vehicle;
 
       const aux = {
         ...ins,
@@ -91,7 +105,7 @@ export class InsuranceService {
   async find_by_vehicle(vehicleId: number) {
     const insurance = await this.insuranceRepository.find({
       where: {
-        vehicle: {id: vehicleId},
+        vehicle: { id: vehicleId },
       },
       loadEagerRelations: false,
     });
@@ -134,8 +148,8 @@ export class InsuranceService {
   async evaluate_insurance(evaluateInsuranceDto: EvaluateInsuranceDto) {
     const { id_insurance, status } = evaluateInsuranceDto;
 
-    const insurance = await this.insuranceRepository.findOneBy({ 
-      id_insurance: id_insurance 
+    const insurance = await this.insuranceRepository.findOneBy({
+      id_insurance: id_insurance
     });
 
     if (!insurance) {
@@ -148,8 +162,19 @@ export class InsuranceService {
       );
     }
 
+    const conductors = await this.conductorsService.findAllByVehicle(insurance.vehicle.id);
+
+    conductors.forEach(cond => {
+      cond.status = ConductorStatus.ACCEPTED;
+      this.conductorsService.update_entity(cond);
+    });
+
     insurance.status = status;
 
     return await this.insuranceRepository.save(insurance);
+  }
+
+  async update_entity(insurance: Insurance) {
+    return await this.insuranceRepository.update(insurance.id_insurance, insurance);
   }
 }
