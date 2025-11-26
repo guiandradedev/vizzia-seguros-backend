@@ -56,8 +56,11 @@ export class InsuranceService {
   }
 
   async findOne_entity(id: number) {
-    const insurance = await this.insuranceRepository.findOneBy({
-      id_insurance: id,
+    const insurance = await this.insuranceRepository.findOne({
+      where: {
+        id_insurance: id,
+      },
+      relations: ['vehicle', 'user'],
     });
 
     if (!insurance)
@@ -144,13 +147,40 @@ export class InsuranceService {
     return insurancesWithoutUser;
   }
 
+  async findAllPending_by_user(userId: number) {
+    const insurances = await this.insuranceRepository.find({
+      where: {
+        user: {id: userId},
+        status: Status.Pending,
+      },
+      relations: ['vehicle'],
+    });
+
+    if (!insurances || !insurances.length) {
+      throw new NotFoundException('Nenhum seguro pendente foi encontrado');
+    }
+
+    const insurancesWithoutUser: any = [];
+
+    insurances.forEach(ins => {
+      const { userId, ...rest } = ins.vehicle;
+
+      const aux = {
+        ...ins,
+        vehicle: rest,
+      };
+
+      insurancesWithoutUser.push(aux);
+    });
+
+    return insurancesWithoutUser;
+  }
+
 
   async evaluate_insurance(evaluateInsuranceDto: EvaluateInsuranceDto) {
     const { id_insurance, status } = evaluateInsuranceDto;
 
-    const insurance = await this.insuranceRepository.findOneBy({
-      id_insurance: id_insurance
-    });
+    const insurance = await this.findOne_entity(id_insurance);
 
     if (!insurance) {
       throw new NotFoundException('Seguro não encontrado');
@@ -164,10 +194,11 @@ export class InsuranceService {
 
     const conductors = await this.conductorsService.findAllByVehicle(insurance.vehicle.id);
 
-    conductors.forEach(cond => {
-      cond.status = ConductorStatus.ACCEPTED;
-      this.conductorsService.update_entity(cond);
-    });
+    for (const cond of conductors) {
+      const {telephone, ...rest} = cond;
+      rest.status = ConductorStatus.ACCEPTED;
+      this.conductorsService.update_entity(rest);
+    }
 
     insurance.status = status;
 

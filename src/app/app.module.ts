@@ -19,6 +19,7 @@ import { redisStore } from 'cache-manager-redis-store';
 import { InsuranceModule } from 'src/insurance/insurance.module';
 import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
+import { InsuranceEndorsementModule } from 'src/insurance-endorsement/insurance-endorsement.module';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { CacheableMemory } from 'cacheable';
         entities: [__dirname + '/../**/*.entity{.ts,.js}'], // Caminho corrigido para as entidades
         synchronize: true, // Em desenvolvimento, pode ser true. Em produção, use migrações.
         autoLoadEntities: false,
-        dropSchema: true,
+        dropSchema: false,
       })
     }),
     CacheModule.registerAsync({
@@ -73,7 +74,8 @@ import { CacheableMemory } from 'cacheable';
     VehicleModule,
     FilesModule,
     ConductorModule,
-    InsuranceModule
+    InsuranceModule,
+    InsuranceEndorsementModule
   ],
   controllers: [AppController],
   providers: [AppService],

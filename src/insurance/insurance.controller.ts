@@ -17,10 +17,18 @@ export class InsuranceController {
 
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
-  @Get('pending')
+  @Get('all-pending')
   find_all_pending() {
-
     return this.insuranceService.findAllPending();
+  }
+
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
+  @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
+  @Get('pending')
+  find_all_pending_by_user(
+    @TokenPayloadParam() tokenPayloadDto: TokenPayloadDto,
+  ) {
+    return this.insuranceService.findAllPending_by_user(tokenPayloadDto.sub);
   }
 
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)

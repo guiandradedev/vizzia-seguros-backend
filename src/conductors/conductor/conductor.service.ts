@@ -78,6 +78,7 @@ export class ConductorService {
   }
 
   async update_entity(conductor: Conductor) {
-    await this.conductorRepository.update(conductor.id, conductor);
+    const { ...scalarProps } = conductor;
+    return await this.conductorRepository.update(conductor.id, scalarProps);
   }
 }
