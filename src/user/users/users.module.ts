@@ -1,0 +1,26 @@
+import { forwardRef, Global, Module } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { UsersController } from './users.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { UserTelephoneModule } from 'src/user/user_telephone/user_telephone.module';
+import { UserAddressModule } from 'src/user/user_address/user_address.module';
+import { AuthModule } from 'src/auth/auth_jwt/auth.module';
+import { VehicleModule } from 'src/vehicle/vehicle.module';
+import { InsuranceModule } from 'src/insurance/insurance.module';
+
+@Global()
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    UserTelephoneModule,
+    UserAddressModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => VehicleModule),
+    InsuranceModule,
+  ],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
+})
+export class UsersModule {}

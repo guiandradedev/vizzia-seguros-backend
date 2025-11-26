@@ -1,0 +1,627 @@
+import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { CreateVehicleDraft, CreateVehicleDto } from './dto/create-vehicle.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Vehicle } from './entities/vehicle.entity';
+import { Repository } from 'typeorm';
+import { VehicleImage } from './entities/vehicle-image.entity';
+import { DataSource } from 'typeorm';
+import { User } from 'src/user/users/entities/user.entity';
+import { MotorizationTypeReverseMap } from './map/motorization-type.map';
+import { AssignConductorsDto } from './dto/assignconductors.dto';
+import { Conductor } from 'src/conductors/conductor/entities/conductor.entity';
+import { ConductorService } from 'src/conductors/conductor/conductor.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { IStep3Data, VehicleDrafts } from './drafts/vehicle-drafs.draft';
+import { Cache } from '@nestjs/cache-manager';
+import { CreateConductorDto } from 'src/conductors/conductor/dto/create-conductor.dto';
+import { Brands, BrandsWeight } from './enums/brand.enum';
+import { MotorizationWeight } from './enums/motorization-types.enum';
+import { TransmissionWeight } from './enums/transmission-type.enum';
+import { GenderWeight } from 'src/user/users/enums/gender-type.enum';
+import { MaritalStatusWeight } from 'src/user/users/enums/marital_status-Type.enum';
+import { ParkWeight } from 'src/address/enums/park_type.enum';
+import { VehicleUseWeight } from './enums/vehicle_use-types.enum';
+import { UsersService } from 'src/user/users/users.service';
+import { CreateInsuranceDto } from 'src/insurance/dto/create-insurance.dto';
+import { InsuranceService } from 'src/insurance/insurance.service';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
+import { AddressService } from 'src/address/address.service';
+
+@Injectable()
+export class VehicleService {
+
+  // ! definindo as constantes de precificacao ! \\
+
+  private readonly brand_price = 1000;
+
+  private readonly fuel_price = 600;
+
+  private readonly transmission_price = 600;
+
+  private readonly year_price = 600;
+  private readonly year_range = [2010, 2020, 0.3] as const; // [min, max, factor]
+
+  private readonly fipe_percent = 0.001;
+  private readonly odometer_percent = 0.0001;
+
+  private readonly age_range = [21, 65, 0.2, 0.5] as const; // [min, max, factor_in, factor_out]
+  private readonly age_price = 500;
+
+  private readonly gender_price = 150;
+
+  private readonly marital_status_price = 200;
+
+  private readonly license_years_price = 400;
+  private readonly license_years_range = [1, 10, 0.5] as const; // [min, max, factor]
+
+  private readonly location_price = 300;
+
+  private readonly park_price = 250;
+
+  private readonly vehicle_use_price = 200;
+
+  private readonly recorrency_price = 1000;
+
+  // ! fim da declaracao ! \\
+
+
+  constructor(
+    private readonly conductorService: ConductorService,
+
+    private readonly insuranceService: InsuranceService,
+
+    private readonly hettpService: HttpService,
+
+    private readonly configService: ConfigService,
+
+    private readonly addressService: AddressService,
+
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
+
+    @InjectRepository(Vehicle)
+    private readonly vehicleRepository: Repository<Vehicle>,
+
+    @InjectRepository(VehicleImage)
+    private readonly vehicleImageRepository: Repository<VehicleImage>,
+
+    @Inject(CACHE_MANAGER)
+    private cacheManager: Cache,
+
+    private readonly dataSource: DataSource,
+  ) { }
+
+  private getDraftKey(userId: number): string {
+    return `draft:vechicle:user:${userId}`;
+  }
+
+  async findOne(id: number) {
+    const vehicle = await this.vehicleRepository.findOneBy({ id });
+
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
+
+    const images = await this.vehicleImageRepository.find({
+      where: { vehicle: { id: vehicle.id } },
+      order: { id: 'ASC' },
+    });
+
+    const filePaths = images.map(img => ({
+      id: img.id,
+      path: img.path,
+      type: img.type,
+      // Include the file itself if needed, assuming you have access to the file storage
+      file: img.path // Adjust this line based on how you manage file access
+    }));
+
+    const { userId, ...vehicleWithoutUser } = vehicle;
+    return {
+      ...vehicleWithoutUser,
+      images: filePaths,
+      conductors: await this.conductorService.findAllByVehicle(vehicle.id),
+    };
+  }
+
+  async findOne_entity(id_vehicle: number) {
+    const vehicle = await this.vehicleRepository.findOneBy({
+      id: id_vehicle,
+    });
+
+    if (!vehicle)
+      throw new NotFoundException('Veiculo nao encontrado');
+
+    return vehicle;
+  }
+
+  async assignConductors(assignConductorsDto: AssignConductorsDto, userId: number) {
+    const vehicle = await this.vehicleRepository.findOneBy({ id: assignConductorsDto.id_vehicle });
+
+    if (!vehicle)
+      throw new NotFoundException('Vehicle not found');
+
+
+    if (vehicle.userId.id != userId)
+      throw new BadRequestException('You do not have permission to assign conductors to this vehicle');
+
+    const createdConductors: Conductor[] = [];
+
+    for (const conductorDto of assignConductorsDto.conductors) {
+      const created = await this.conductorService.create(conductorDto, vehicle.id);
+      createdConductors.push(created);
+    }
+
+    await this.vehicleRepository.save(vehicle);
+
+    return createdConductors;
+  }
+
+
+  async findAllVehiclesByUser(userId: number) {
+    let veiculos = await this.vehicleRepository.find({
+      where: {
+        userId: { id: userId },
+      }
+    });
+
+    if (!veiculos || veiculos.length === 0)
+      throw new NotFoundException('No vehicles found for this user');
+
+    const vehiclesWithConductors = await Promise.all(veiculos.map(async v => {
+      const conductors = await this.conductorService.findAllByVehicle(v.id);
+      return { ...v, conductors };
+    }));
+
+    return vehiclesWithConductors.map(({ userId, ...vehicle }) => vehicle);
+  }
+
+
+  async deleteVehicle(id: number, userId: number) {
+    const vehicle = await this.vehicleRepository.findOneBy({ id });
+
+    if (!vehicle)
+      throw new NotFoundException('Vehicle not found');
+
+    if (vehicle.userId.id != userId)
+      throw new ForbiddenException('You do not have permission to delete this vehicle');
+
+    await this.vehicleRepository.remove(vehicle);
+
+    return { message: 'Vehicle deleted successfully' };
+  }
+
+  async saveStep1_create_vehicle(
+    userId: number,
+    createVehicleDto: CreateVehicleDto,
+    photo: Express.Multer.File,
+    photoType: string,
+  ) {
+
+    let createVehicleDraft: CreateVehicleDraft;
+
+    try {
+      const apiIp = this.configService.get<String>('AI_PYTHON_SERVER_IP');
+      const apiPort = this.configService.get<String>('AI_PYTHON_SERVER_PORT');
+
+      const apiUrl = `http://${apiIp}:${apiPort}/get_fipe`;
+
+      const requestBody = {
+        brand_code: String(createVehicleDto.brand),
+        client_car_model: createVehicleDto.model,
+        year: createVehicleDto.year,
+        motorization: createVehicleDto.motorization,
+      };
+
+      const response = await firstValueFrom(this.hettpService.post(apiUrl, requestBody));
+
+      const responseData = response.data;
+
+      const valorString = responseData.Valor;
+
+      const valorNumerico = parseFloat(
+        valorString
+          .replace("R$ ", "")
+          .replace(/\./g, "")
+          .replace(",", ".")
+      );
+
+      createVehicleDraft = {
+        ...createVehicleDto,
+        fipe: valorNumerico,
+      };
+
+    } catch (error) {
+      console.error('Erro ao chamar a API externa:', error.response?.data || error.message);
+
+      throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
+    }
+
+    if (!photo) {
+      throw new BadRequestException('A foto inicial (campo "photo") é obrigatória na etapa 1.');
+    }
+
+    const step3Data: IStep3Data[] = [{
+      path: photo.path,
+      type: photoType
+    }];
+    // --- Fim da Nova Lógica de Foto ---
+
+    const key = this.getDraftKey(userId);
+
+    const draft: VehicleDrafts = {
+      step1: createVehicleDraft,
+      step3: step3Data
+    };
+
+    await this.cacheManager.set(key, draft);
+
+    return draft;
+  }
+
+  async saveStep2_assign_conductors(userId: number, createConductors: CreateConductorDto[]) {
+    const key = this.getDraftKey(userId);
+    const draft = await this.cacheManager.get<VehicleDrafts>(key);
+
+    if (!draft || !draft.step1) {
+      throw new BadRequestException('Requer criar o veiculos primeiramente');
+    }
+
+    const updatedDraft: VehicleDrafts = { ...draft, step2: createConductors };
+    await this.cacheManager.set(key, updatedDraft);
+    return updatedDraft;
+  }
+
+  async saveStep3_photos(
+    userId: number,
+    photos: Array<Express.Multer.File>, // array de arquivos do multer
+    photosMeta: string | any[] | undefined, // metadata
+  ) {
+    const key = this.getDraftKey(userId);
+    const draft = await this.cacheManager.get<VehicleDrafts>(key);
+
+    // 1. Validar Rascunho existente
+    if (!draft || !draft.step1 || !draft.step2) {
+      throw new BadRequestException('As etapas 1 (veículo) e 2 (condutores) devem ser preenchidas primeiro.');
+    }
+
+    // --- Início: Lógica de Fotos (copiada do seu método create) ---
+    const parsedPhotosMeta: any[] = (() => {
+      if (!photosMeta) return [];
+      if (Array.isArray(photosMeta)) return photosMeta;
+      try {
+        const parsed = JSON.parse(String(photosMeta));
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) { /* ignore */ }
+      return [];
+    })();
+
+    if (!Array.isArray(photos) || photos.length === 0)
+      throw new BadRequestException('Pelo menos uma foto é obrigatória (etapa 3)');
+
+    const simpleStringsMeta = parsedPhotosMeta.length > 0 && parsedPhotosMeta.every(m => typeof m === 'string');
+    if (simpleStringsMeta && parsedPhotosMeta.length !== photos.length)
+      throw new BadRequestException('O número de tipos de fotos deve corresponder ao número de fotos');
+
+    const getTypeForFile = (file: Express.Multer.File, idx: number) => {
+      if (parsedPhotosMeta[idx] && typeof parsedPhotosMeta[idx] === 'string') return parsedPhotosMeta[idx];
+      if (parsedPhotosMeta[idx] && typeof parsedPhotosMeta[idx] === 'object' && parsedPhotosMeta[idx].type) return parsedPhotosMeta[idx].type;
+      const found = parsedPhotosMeta.find(m =>
+        m && typeof m === 'object' && (
+          m.file === file.originalname ||
+          m.originalname === file.originalname ||
+          m.fileName === file.originalname
+        )
+      );
+      if (found && found.type) return found.type;
+      return idx === 0 ? 'initial' : 'extra';
+    };
+    // --- Fim: Lógica de Fotos ---
+
+    const newPhotosData: IStep3Data[] = photos.map((file, idx) => ({
+      path: file.path,
+      type: getTypeForFile(file, idx),
+    }));
+
+    // --- Início da Lógica de Combinação ---
+    const existingPhotos = draft.step3 || [];
+
+    const allPhotosData = [...existingPhotos, ...newPhotosData];
+    // --- Fim da Lógica de Combinação ---
+
+    // 5. Salva o rascunho com o array de fotos combinado
+    const updatedDraft: VehicleDrafts = { ...draft, step3: allPhotosData };
+    await this.cacheManager.set(key, updatedDraft);
+
+    return updatedDraft;
+  }
+
+
+  async step4_estimate_price(userID: number) {
+    const key = this.getDraftKey(userID);
+    const draft = await this.cacheManager.get<VehicleDrafts>(key);
+
+    if (!draft) {
+      throw new NotFoundException('Nenhum rascunho de veículo encontrado.');
+    }
+    if (!draft.step1) {
+      throw new BadRequestException('Dados do veículo (Etapa 1) estão faltando no rascunho.');
+    }
+    if (!draft.step3 || draft.step3.length <= 1) {
+      throw new BadRequestException('Falta epata 3.');
+    }
+
+    const vehicle = draft.step1;
+    const user = await this.usersService.findOne(userID);
+    const user_address = await this.addressService.findOne(user.id);
+
+    let price = 0;
+
+    // --- 3. Cálculo do Veículo ---
+    const motorizationString = MotorizationTypeReverseMap[vehicle.motorization];
+
+    const brand_user = BrandsWeight[Brands[vehicle.brand] as keyof typeof BrandsWeight];
+    if (brand_user === undefined) throw new BadRequestException(`Marca inválida: ${vehicle.brand}`);
+
+    const fuel_type_user = MotorizationWeight[motorizationString as keyof typeof MotorizationWeight];
+    if (fuel_type_user === undefined) throw new BadRequestException(`Tipo de combustível inválido: ${motorizationString}`);
+
+    const transmission_user = TransmissionWeight[vehicle.transmission as keyof typeof TransmissionWeight];
+    if (transmission_user === undefined) throw new BadRequestException(`Tipo de transmissão inválida: ${vehicle.transmission}`);
+
+    price += this.brand_price * brand_user;
+    price += this.fuel_price * fuel_type_user;
+    price += this.transmission_price * transmission_user;
+    price += this.year_price * this.year_price_calc(vehicle.year);
+    price += vehicle.fipe * this.fipe_percent;
+    price += Number(vehicle.odometer) * this.odometer_percent;
+
+    // --- 4. Cálculo do Usuário ---
+    const gender = GenderWeight[user.gender as keyof typeof GenderWeight];
+    if (gender === undefined) throw new BadRequestException(`Gênero inválido: ${user.gender}`);
+
+    const marital_status = MaritalStatusWeight[user.marital_status as keyof typeof MaritalStatusWeight];
+    if (marital_status === undefined) throw new BadRequestException(`Estado civil inválido: ${user.marital_status}`);
+
+    const park_user = ParkWeight[vehicle.park_type as keyof typeof ParkWeight];
+    if (park_user === undefined) throw new BadRequestException(`Tipo de estacionamento inválido: ${vehicle.park_type}`);
+
+    const vehicle_use_user = VehicleUseWeight[vehicle.use_type as keyof typeof VehicleUseWeight];
+    if (vehicle_use_user === undefined) throw new BadRequestException(`Tipo de uso do veículo inválido: ${vehicle.use_type}`);
+
+    const user_license_years = this.calculateFullYears(user.cnhIssueDate);
+
+    price += this.age_price * this.calc_age(user.age);
+    price += this.gender_price * gender;
+    price += this.marital_status_price * marital_status;
+    price += this.license_years_price * this.calc_license_years(user_license_years);
+    price += await this.evaluate_user_location(user_address.cep, vehicle.model); // ! mudar 
+    price += this.park_price * park_user;
+    price += this.vehicle_use_price * vehicle_use_user;
+
+    // --- 5. Calculo dos Condutores ---
+
+    if (draft.step2) {
+      const conductors = draft.step2;
+      conductors.forEach(cond => {
+        price += this.calculate_conductors_price(cond);
+      });
+    }
+
+    const updatedDraft: VehicleDrafts = { ...draft, estimated_price_step4: price };
+    await this.cacheManager.set(key, updatedDraft);
+
+    return { estimated_price: parseFloat(price.toFixed(2)) };
+  }
+
+  async finalize(user_Id: number) {
+    const key = this.getDraftKey(user_Id);
+    const draft = await this.cacheManager.get<VehicleDrafts>(key);
+
+    // --- 1. Validar o Rascunho COMPLETO
+    if (!draft || !draft.step1 || !draft.step2 || !draft.step3 || draft.estimated_price_step4 == undefined || !draft.estimated_price_step4) {
+      throw new BadRequestException('Todas as 4 etapas devem ser completas para finalizar o cadastro.');
+    }
+
+    const user = await this.usersService.findUserEntityById(user_Id);
+
+    // --- 2. Extrair dados do rascunho
+    const { step1: createVehicleDto, step2: conductorsDtoArray, step3: imagesDataArray } = draft;
+
+
+    // --- salva o veiculo no banco
+
+    const { motorization, ...rest } = draft.step1;
+
+    const vehiclePayload = {
+      ...rest,
+      motorization: MotorizationTypeReverseMap[motorization],
+      userId: user
+    };
+
+    const vehicleInstance = this.vehicleRepository.create(vehiclePayload);
+    const savedVehicle = await this.vehicleRepository.save(vehicleInstance);
+
+    // --- salva condutores no banco
+
+    const conductorsDraft = draft.step2;
+
+    const assignConductorsDto: AssignConductorsDto = {
+      id_vehicle: savedVehicle.id,
+      conductors: conductorsDraft
+    };
+
+    const savedConductors = await this.assignConductors(assignConductorsDto, user_Id);
+
+    // --- salva o insurance ...
+
+    const estimated_price: number = draft.estimated_price_step4;
+
+    const insurancePayload: CreateInsuranceDto = {
+      user: user,
+      vehicle: savedVehicle,
+      estimated_price: estimated_price
+    };
+
+    const insurance = await this.insuranceService.create(insurancePayload);
+
+    await this.dataSource.transaction(async (manager) => {
+      // 'imagesDataArray' já tem 'path' e 'type'
+      const vehicleImageEntities = imagesDataArray.map(imgData =>
+        manager.create(VehicleImage, {
+          path: imgData.path,
+          type: imgData.type,
+          vehicle: savedVehicle,
+        })
+      );
+      await manager.save(vehicleImageEntities);
+    });
+
+    await this.cacheManager.del(key);
+
+    const { userId, ...restVehicle } = savedVehicle
+
+    return {
+      vehicle: restVehicle,
+      conductors: savedConductors,
+      insurance: insurance
+    }
+  }
+
+
+  async getCurrentDraft(userId: number) {
+    const key = this.getDraftKey(userId);
+    const draft = await this.cacheManager.get<VehicleDrafts>(key);
+
+    if (!draft) {
+      return {
+        nextStep: 1,
+        draft: null
+      };
+    }
+
+    let nextStep: any = 1;
+    if (draft.step1) nextStep = 2;
+    if (draft.step2) nextStep = 3;
+    if (draft.step3) nextStep = 4;
+    if (draft.estimated_price_step4) nextStep = 'finalize';
+
+    return {
+      nextStep: nextStep,
+      draft: draft
+    };
+  }
+
+
+  // -- metodos auxiliares para estimar o preco -- \\
+
+  calculate_conductors_price(conductorDto: CreateConductorDto): number {
+    let price = 0;
+
+    const gender = GenderWeight[conductorDto.gender as keyof typeof GenderWeight];
+    if (gender === undefined) throw new BadRequestException(`Gênero inválido: ${conductorDto.gender}`);
+
+    const marital_status = MaritalStatusWeight[conductorDto.marital_status as keyof typeof MaritalStatusWeight];
+    if (marital_status === undefined) throw new BadRequestException(`Estado civil inválido: ${conductorDto.marital_status}`);
+
+    const user_license_years = this.calculateFullYears(conductorDto.cnhIssueDate);
+
+    // Preço do user
+    price += this.age_price * this.calc_age(conductorDto.age);
+    price += this.gender_price * gender;
+    price += this.marital_status_price * marital_status;
+    price += this.license_years_price * this.calc_license_years(user_license_years);
+    price += this.location_price * 0.6; // ! mudar 
+
+    return 0.4 * price;
+  }
+
+  private year_price_calc(year_calc: number): number {
+    if (year_calc >= this.year_range[0] && year_calc <= this.year_range[1]) {
+      return this.year_range[2];
+    } else {
+      if (year_calc < this.year_range[0]) {
+        const diff = this.year_range[0] - year_calc;
+        return this.year_range[2] * (1 + (diff / 100)); // Aumenta 0.1% por ano fora
+      } else {
+        const diff = year_calc - this.year_range[1];
+        return this.year_range[2] * (1 + (diff / 10)); // Aumenta 10% por ano fora
+      }
+    }
+  }
+
+  private calc_age(user_age: number): number {
+    if (user_age >= this.age_range[0] && user_age <= this.age_range[1]) {
+      return this.age_range[2]; // factor_in
+    } else {
+      return this.age_range[3]; // factor_out
+    }
+  }
+
+  private calc_license_years(license_years: number): number {
+    if (license_years >= this.license_years_range[0] && license_years <= this.license_years_range[1]) {
+      return this.license_years_range[2];
+    } else {
+      if (license_years < this.license_years_range[0]) {
+        const diff = this.license_years_range[0] - license_years;
+        return this.license_years_range[2] * (1 + (diff / 10)); // Aumenta 10% por ano fora
+      } else {
+        const diff = license_years - this.license_years_range[1];
+        return this.license_years_range[2] * (1 + (diff / 100)); // Aumenta 0.1% por ano fora
+      }
+    }
+  }
+
+  private async evaluate_user_location(cep: string, car_model: string): Promise<number> {
+
+    // ! cep, dis, car_model
+    let price = 0;
+
+    try {
+      const apiIp = this.configService.get<String>('AI_PYTHON_SERVER_IP');
+      const apiPort = this.configService.get<String>('AI_PYTHON_SERVER_PORT');
+
+      const apiUrl = `http://${apiIp}:${apiPort}/estimate_details`;
+
+      const requestBody = {
+        cep: cep,
+        car_model: car_model
+      };
+
+      const response = await firstValueFrom(this.hettpService.post(apiUrl, requestBody));
+
+      console.log('respota da API: ', response.data);
+
+      const responseData = response.data;
+
+      price = Number(responseData.car.robbery_recorrency) * this.recorrency_price;
+
+      console.log('robbery_recorrency * recorrency_price: ', price);
+
+    } catch (error) {
+      console.error('Erro ao chamar a API externa:', error.response?.data || error.message);
+
+      throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
+    }
+
+    return price;
+  }
+
+  private calculateFullYears(issueDate: Date): number {
+    const cnhDate = new Date(issueDate);
+    const today = new Date();
+
+    let years = today.getFullYear() - cnhDate.getFullYear();
+
+    const currentMonth = today.getMonth(); // 0-11
+    const issueMonth = cnhDate.getMonth(); // 0-11
+
+    const currentDay = today.getDate(); // 1-31
+    const issueDay = cnhDate.getDate(); // 1-31
+
+    if (currentMonth < issueMonth || (currentMonth === issueMonth && currentDay < issueDay)) {
+      years--; // Subtrai 1 ano
+    }
+
+    return Math.max(0, years);
+  }
+}

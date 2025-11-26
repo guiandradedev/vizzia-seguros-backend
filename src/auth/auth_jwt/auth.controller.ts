@@ -1,0 +1,22 @@
+import { Body, Controller, Post } from '@nestjs/common';
+import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { AuthService } from './auth.service';
+
+@Controller('auth')
+export class AuthController {
+    constructor(
+        private readonly authService: AuthService,
+    ) {}
+
+    @Post('login')
+    login(@Body() loginDto: LoginDto){
+        return this.authService.login(loginDto);
+    }
+
+    @Post('refresh-token')
+    refreshToken(@Body() refreshTokenDto: RefreshTokenDto){
+        // console.log('RAW BODY NO CONTROLLER:', refreshTokenDto);
+        return this.authService.refreshToken(refreshTokenDto);
+    }
+}

@@ -1,42 +1,48 @@
-version: '3.8'
-
 services:
-  # Serviço da sua aplicação NestJS
   api:
     container_name: nest-api
     build:
-      context: . # Onde encontrar o Dockerfile (diretório atual)
-      target: builder # Usa o 'builder' stage para desenvolvimento (para hot-reload)
-    # Comandos de desenvolvimento (hot-reload)
+      context: .
+      target: builder
     command: npm run start:dev
-    # Carrega variáveis de ambiente do arquivo .env
     env_file:
       - .env
-    # Mapeamento de portas (host:container)
     ports:
-      - '3000:3000' # Porta da aplicação
-    # Monta volumes para hot-reload e persistência
+      - '3001:3001' # Mapeia a porta 3001 do host para 3000 do contêiner
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    # Garante que o DB inicie antes do backend
     depends_on:
+      - redis
       - db
     networks:
       - backend-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    user: "${UID}:${GID}"
+    environment:
+      REDIS_HOST: redis # Este é o nome do serviço Redis abaixo
+      REDIS_PORT: 6379
 
-  # Serviço do Banco de Dados (PostgreSQL)
   db:
     container_name: postgres-db
-    image: postgres:15-alpine # Imagem oficial do PostgreSQL
-    # Carrega variáveis de ambiente do arquivo .env
+    image: postgres:15-alpine
     env_file:
       - .env
     ports:
       - '5432:5432'
     volumes:
-      # Persiste os dados do banco de dados no seu disco local
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
       - backend-network
 
@@ -45,4 +51,5 @@ networks:
     driver: bridge
 
 volumes:
+  redis_data:
   postgres_data:

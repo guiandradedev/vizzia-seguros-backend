@@ -1,8 +1,37 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { AppModule } from './app/app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { join } from 'path';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { RoutePolicyGuard } from './roles/guard/route-policy.guard';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: false,
+    transform: true,
+  }));
+
+  app.useGlobalFilters(
+    new DatabaseExceptionFilter(),
+  );
+
+  // app.useGlobalGuards(new RoutePolicyGuard(app.get(Reflector)));
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
