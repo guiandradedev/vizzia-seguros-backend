@@ -35,8 +35,6 @@ export class UsersService {
   ) { }
 
   async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await this.hashingService.hash(createUserDto.passwordHash);
-
     const userPayload: UserDto = createUserDto;
 
     userPayload.passwordHash = await this.hashingService.hash(userPayload.passwordHash);

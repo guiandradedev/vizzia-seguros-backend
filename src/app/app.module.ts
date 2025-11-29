@@ -20,6 +20,7 @@ import { InsuranceModule } from 'src/insurance/insurance.module';
 import KeyvRedis, { Keyv } from '@keyv/redis';
 import { CacheableMemory } from 'cacheable';
 import { InsuranceEndorsementModule } from 'src/insurance-endorsement/insurance-endorsement.module';
+import { AssistanceModule } from 'src/assistance/assistance.module';
 
 @Module({
   imports: [
@@ -75,7 +76,8 @@ import { InsuranceEndorsementModule } from 'src/insurance-endorsement/insurance-
     FilesModule,
     ConductorModule,
     InsuranceModule,
-    InsuranceEndorsementModule
+    InsuranceEndorsementModule,
+    AssistanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
