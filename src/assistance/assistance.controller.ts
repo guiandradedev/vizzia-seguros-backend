@@ -21,10 +21,20 @@ export class AssistanceController {
   ) {
     return this.assistanceService.request_assistance(tokenPayloadDto.sub, createAssistanceDto);
   }
-  
+
   @Get('all-pending')
   get_pending_assistances() {
     return this.assistanceService.get_pending_assistances();
+  }
+
+  @Get('all-completed')
+  get_completed_assistances() {
+    return this.assistanceService.get_completed_assistances();
+  }
+
+  @Get('all-progess')
+  get_progess_assistances() {
+    return this.assistanceService.get_inProgess_assistances();
   }
 
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)
@@ -40,13 +50,13 @@ export class AssistanceController {
 
     return this.assistanceService.get_history(userId);
   }
-  
-    @Get('terminate/:id')
-    terminate_assistance(
-      @Param('id') id: number,
-    ) {
-      return this.assistanceService.terminate_assistance(id);
-    }
+
+  @Get('terminate/:id')
+  terminate_assistance(
+    @Param('id') id: number,
+  ) {
+    return this.assistanceService.terminate_assistance(id);
+  }
 
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
   @Get(':id')

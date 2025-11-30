@@ -93,8 +93,24 @@ export class AssistanceService {
     });
   }
 
+  async get_completed_assistances(): Promise<Assistance[]> {
+    return await this.assistanceRepository.find({
+      where: { status: AssistanceStatus.COMPLETED },
+      relations: ['insurance', 'insurance.vehicle'],
+      order: { requested_at: 'DESC' },
+    });
+  }
+
+  async get_inProgess_assistances(): Promise<Assistance[]> {
+    return await this.assistanceRepository.find({
+      where: { status: AssistanceStatus.IN_PROGRESS },
+      relations: ['insurance', 'insurance.vehicle'],
+      order: { requested_at: 'DESC' },
+    });
+  }
+
   async update_entity(assistance: Assistance) {
-    const updated_entity = await this.assistanceRepository.update(assistance.id, assistance);
+    const updated_entity = await this.assistanceRepository.save(assistance);
 
     return updated_entity;
   }
