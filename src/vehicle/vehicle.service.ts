@@ -359,51 +359,38 @@ export class VehicleService {
     // --- 3. Cálculo do Veículo ---
     const motorizationString = MotorizationTypeReverseMap[vehicle.motorization];
 
-    const brand_user = BrandsWeight[Brands[vehicle.brand] as keyof typeof BrandsWeight];
-    if (brand_user === undefined) throw new BadRequestException(`Marca inválida: ${vehicle.brand}`);
-
-    const fuel_type_user = MotorizationWeight[motorizationString as keyof typeof MotorizationWeight];
-    if (fuel_type_user === undefined) throw new BadRequestException(`Tipo de combustível inválido: ${motorizationString}`);
-
-    const transmission_user = TransmissionWeight[vehicle.transmission as keyof typeof TransmissionWeight];
-    if (transmission_user === undefined) throw new BadRequestException(`Tipo de transmissão inválida: ${vehicle.transmission}`);
-
-    price += this.brand_price * brand_user;
-    price += this.fuel_price * fuel_type_user;
-    price += this.transmission_price * transmission_user;
-    price += this.year_price * this.year_price_calc(vehicle.year);
-    price += vehicle.fipe * this.fipe_percent;
-    price += Number(vehicle.odometer) * this.odometer_percent;
+    price += this.insuranceService.calculate_cost_for_vehicle(
+      motorizationString,
+      vehicle.brand,
+      vehicle.transmission,
+      vehicle.year,
+      vehicle.fipe,
+      Number(vehicle.odometer)
+    );
 
     // --- 4. Cálculo do Usuário ---
-    const gender = GenderWeight[user.gender as keyof typeof GenderWeight];
-    if (gender === undefined) throw new BadRequestException(`Gênero inválido: ${user.gender}`);
-
-    const marital_status = MaritalStatusWeight[user.marital_status as keyof typeof MaritalStatusWeight];
-    if (marital_status === undefined) throw new BadRequestException(`Estado civil inválido: ${user.marital_status}`);
-
-    const park_user = ParkWeight[vehicle.park_type as keyof typeof ParkWeight];
-    if (park_user === undefined) throw new BadRequestException(`Tipo de estacionamento inválido: ${vehicle.park_type}`);
-
-    const vehicle_use_user = VehicleUseWeight[vehicle.use_type as keyof typeof VehicleUseWeight];
-    if (vehicle_use_user === undefined) throw new BadRequestException(`Tipo de uso do veículo inválido: ${vehicle.use_type}`);
-
-    const user_license_years = this.calculateFullYears(user.cnhIssueDate);
-
-    price += this.age_price * this.calc_age(user.age);
-    price += this.gender_price * gender;
-    price += this.marital_status_price * marital_status;
-    price += this.license_years_price * this.calc_license_years(user_license_years);
-    price += await this.evaluate_user_location(user_address.cep, vehicle.model); // ! mudar 
-    price += this.park_price * park_user;
-    price += this.vehicle_use_price * vehicle_use_user;
+    price += await this.insuranceService.calculate_cost_for_user(
+      user.gender,
+      user.marital_status,
+      vehicle.park_type,
+      vehicle.use_type,
+      user.cnhIssueDate,
+      user.age,
+      user_address.cep,
+      vehicle.model
+    );
 
     // --- 5. Calculo dos Condutores ---
 
     if (draft.step2) {
       const conductors = draft.step2;
       conductors.forEach(cond => {
-        price += this.calculate_conductors_price(cond);
+        price += this.insuranceService.calculate_conductors_price(
+          cond.gender,
+          cond.marital_status,
+          cond.cnhIssueDate,
+          cond.age
+        );
       });
     }
 
@@ -511,117 +498,4 @@ export class VehicleService {
     };
   }
 
-
-  // -- metodos auxiliares para estimar o preco -- \\
-
-  calculate_conductors_price(conductorDto: CreateConductorDto): number {
-    let price = 0;
-
-    const gender = GenderWeight[conductorDto.gender as keyof typeof GenderWeight];
-    if (gender === undefined) throw new BadRequestException(`Gênero inválido: ${conductorDto.gender}`);
-
-    const marital_status = MaritalStatusWeight[conductorDto.marital_status as keyof typeof MaritalStatusWeight];
-    if (marital_status === undefined) throw new BadRequestException(`Estado civil inválido: ${conductorDto.marital_status}`);
-
-    const user_license_years = this.calculateFullYears(conductorDto.cnhIssueDate);
-
-    // Preço do user
-    price += this.age_price * this.calc_age(conductorDto.age);
-    price += this.gender_price * gender;
-    price += this.marital_status_price * marital_status;
-    price += this.license_years_price * this.calc_license_years(user_license_years);
-    price += this.location_price * 0.6; // ! mudar 
-
-    return 0.4 * price;
-  }
-
-  private year_price_calc(year_calc: number): number {
-    if (year_calc >= this.year_range[0] && year_calc <= this.year_range[1]) {
-      return this.year_range[2];
-    } else {
-      if (year_calc < this.year_range[0]) {
-        const diff = this.year_range[0] - year_calc;
-        return this.year_range[2] * (1 + (diff / 100)); // Aumenta 0.1% por ano fora
-      } else {
-        const diff = year_calc - this.year_range[1];
-        return this.year_range[2] * (1 + (diff / 10)); // Aumenta 10% por ano fora
-      }
-    }
-  }
-
-  private calc_age(user_age: number): number {
-    if (user_age >= this.age_range[0] && user_age <= this.age_range[1]) {
-      return this.age_range[2]; // factor_in
-    } else {
-      return this.age_range[3]; // factor_out
-    }
-  }
-
-  private calc_license_years(license_years: number): number {
-    if (license_years >= this.license_years_range[0] && license_years <= this.license_years_range[1]) {
-      return this.license_years_range[2];
-    } else {
-      if (license_years < this.license_years_range[0]) {
-        const diff = this.license_years_range[0] - license_years;
-        return this.license_years_range[2] * (1 + (diff / 10)); // Aumenta 10% por ano fora
-      } else {
-        const diff = license_years - this.license_years_range[1];
-        return this.license_years_range[2] * (1 + (diff / 100)); // Aumenta 0.1% por ano fora
-      }
-    }
-  }
-
-  private async evaluate_user_location(cep: string, car_model: string): Promise<number> {
-
-    // ! cep, dis, car_model
-    let price = 0;
-
-    try {
-      const apiIp = this.configService.get<String>('AI_PYTHON_SERVER_IP');
-      const apiPort = this.configService.get<String>('AI_PYTHON_SERVER_PORT');
-
-      const apiUrl = `http://${apiIp}:${apiPort}/estimate_details`;
-
-      const requestBody = {
-        cep: cep,
-        car_model: car_model
-      };
-
-      const response = await firstValueFrom(this.hettpService.post(apiUrl, requestBody));
-
-      console.log('respota da API: ', response.data);
-
-      const responseData = response.data;
-
-      price = Number(responseData.car.robbery_recorrency) * this.recorrency_price;
-
-      console.log('robbery_recorrency * recorrency_price: ', price);
-
-    } catch (error) {
-      console.error('Erro ao chamar a API externa:', error.response?.data || error.message);
-
-      throw new InternalServerErrorException('Falha ao validar dados com o serviço externo.');
-    }
-
-    return price;
-  }
-
-  private calculateFullYears(issueDate: Date): number {
-    const cnhDate = new Date(issueDate);
-    const today = new Date();
-
-    let years = today.getFullYear() - cnhDate.getFullYear();
-
-    const currentMonth = today.getMonth(); // 0-11
-    const issueMonth = cnhDate.getMonth(); // 0-11
-
-    const currentDay = today.getDate(); // 1-31
-    const issueDay = cnhDate.getDate(); // 1-31
-
-    if (currentMonth < issueMonth || (currentMonth === issueMonth && currentDay < issueDay)) {
-      years--; // Subtrai 1 ano
-    }
-
-    return Math.max(0, years);
-  }
 }

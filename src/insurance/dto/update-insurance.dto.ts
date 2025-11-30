@@ -1,4 +1,9 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateInsuranceDto } from './create-insurance.dto';
+import { IsNotEmpty, IsNumber } from "class-validator";
+import { User } from "src/user/users/entities/user.entity";
+import { Vehicle } from "src/vehicle/entities/vehicle.entity";
 
-export class UpdateInsuranceDto extends PartialType(CreateInsuranceDto) {}
+export class UpdateInsuranceDto {
+    @IsNumber()
+    @IsNotEmpty()
+    estimated_price: number;
+}

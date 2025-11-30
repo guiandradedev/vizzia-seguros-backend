@@ -36,7 +36,7 @@ export class UsersController {
     return this.usersService.update(tokenPayloadParam.sub, updateUserDto);
   }
 
-  @SetRoutePolicy([RoutePolicies.admin])
+  @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {

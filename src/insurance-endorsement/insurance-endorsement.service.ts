@@ -41,7 +41,7 @@ export class InsuranceEndorsementService {
     let conds: Conductor[] = [];
 
     for (const cond of createConductorDto) {
-      price_increase += this.vehicleService.calculate_conductors_price(cond);
+      price_increase += this.insuranceService.calculate_conductors_price(cond.gender, cond.marital_status, cond.cnhIssueDate, cond.age);
       const conductor = await this.conductorsService.create(cond, insurance.vehicle.id);
       conds.push(conductor);
     }
