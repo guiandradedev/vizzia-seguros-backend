@@ -107,14 +107,15 @@ export class InsuranceService {
 
   async find_by_vehicle(vehicleId: number) {
     const insurance = await this.insuranceRepository.find({
-      where: {
-        vehicle: { id: vehicleId },
-      },
-      loadEagerRelations: false,
+        where: {
+            vehicle: { id: vehicleId },
+        },
+        loadEagerRelations: false,
     });
 
-    if (!insurance)
-      throw new NotFoundException('seguro nao encontrado');
+    if (!insurance || insurance.length === 0) {
+        throw new NotFoundException('Seguro não encontrado para este veículo');
+    }
 
     return insurance[0];
   }

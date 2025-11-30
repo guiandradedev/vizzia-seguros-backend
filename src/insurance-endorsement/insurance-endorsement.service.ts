@@ -56,7 +56,7 @@ export class InsuranceEndorsementService {
       created_at: new Date(),
     } as InsuranceEndorsement);
 
-    await this.insuranceEndorsementRepository.save(endorsements);
+    return await this.insuranceEndorsementRepository.save(endorsements);
   }
 
   async find_all_pending() {
