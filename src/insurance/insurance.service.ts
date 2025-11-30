@@ -172,7 +172,7 @@ export class InsuranceService {
       relations: ['vehicle'],
     });
 
-    if (insurances.length = 0)
+    if (!insurances.length)
       throw new NotFoundException('seguro nao encontrado');
       
     return insurances;
@@ -279,7 +279,7 @@ export class InsuranceService {
   }
 
   async update_entity(insurance: Insurance) {
-    return await this.insuranceRepository.update(insurance.id_insurance, insurance);
+    return await this.insuranceRepository.save(insurance);
   }
 
   calculate_cost_for_vehicle(

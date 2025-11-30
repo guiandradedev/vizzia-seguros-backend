@@ -37,8 +37,13 @@ export class PartialUpdateUserDto {
     cnhIssueDate: Date;
 
     @IsEnum(MaritalStatusType)
-    @IsOptional()    
+    @IsOptional()
     marital_status: MaritalStatusType;
+
+    @IsString()
+    @IsOptional()
+    passwordHash: string;
+
 
 }
 
