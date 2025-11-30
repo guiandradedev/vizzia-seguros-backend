@@ -65,6 +65,17 @@ export class ConductorService {
     return conductorsWithTelephones;
   }
 
+  async findAll_entities_by_vehicle(id_vehicle: number) {
+    const vehicleConductors = await this.vehicleConductorRepository.find({
+      where: { id_vehicle },
+      relations: ['conductorId'],
+    });
+
+    const conductors : Conductor[] = vehicleConductors.map(vc => vc.conductorId);
+
+    return conductors;
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} conductor`;
   }

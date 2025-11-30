@@ -8,6 +8,7 @@ import { UserAddressModule } from 'src/user/user_address/user_address.module';
 import { AuthModule } from 'src/auth/auth_jwt/auth.module';
 import { VehicleModule } from 'src/vehicle/vehicle.module';
 import { InsuranceModule } from 'src/insurance/insurance.module';
+import { ConductorModule } from 'src/conductors/conductor/conductor.module';
 
 @Global()
 @Module({
@@ -18,6 +19,7 @@ import { InsuranceModule } from 'src/insurance/insurance.module';
     forwardRef(() => AuthModule),
     forwardRef(() => VehicleModule),
     InsuranceModule,
+    ConductorModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
