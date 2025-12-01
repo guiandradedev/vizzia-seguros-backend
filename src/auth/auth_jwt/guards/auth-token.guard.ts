@@ -8,6 +8,9 @@ import { TokenTypes } from 'src/auth/enums/tokenTypes.enum';
 import { Reflector } from '@nestjs/core';
 import { ALLOWED_TOKEN_TYPES_KEY } from 'src/auth/decorators/allowed-token-types.decorator';
 import { UsersService } from 'src/user/users/users.service';
+import { User } from 'src/user/users/entities/user.entity';
+import { AuthService } from '../auth.service';
+import { SocialAuthService } from 'src/auth/social_auth/social_auth.service';
 
 @Injectable()
 export class AuthTokenGuard implements CanActivate {
@@ -19,6 +22,8 @@ export class AuthTokenGuard implements CanActivate {
 
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
+
+    // private readonly socialAuthService: SocialAuthService,
 
   ) {}
 
@@ -45,14 +50,21 @@ export class AuthTokenGuard implements CanActivate {
       if (!allowedTokenTypes.includes(payload.type))
         throw new UnauthorizedException('Token invalido');
 
-      const user = await this.usersService.findUserEntityById(payload.sub);
+      let user: User | undefined = undefined
+      if(payload.type == "createusersocial") {
+        // user = await th
+      } else {
+        user = await this.usersService.findUserEntityById(payload.sub);
+        if (!user)
+            throw new UnauthorizedException('user invalido');
+      }
 
-      if (!user)
-          throw new UnauthorizedException('user invalido');
+
 
       request[REQUEST_TOKEN_PAYLOAD_KEY] = payload;
 
     }catch (error) {
+      console.log(error)
       throw new UnauthorizedException('Token invalido ou expirado');
     }
     return true;
