@@ -156,7 +156,14 @@ export class UsersService {
 
       // calcular o preco de todos os veiculos que tiver associado
       // todos os veiculos associados ao user
-      const insuraces = await this.insuranceService.findAll_entities_by_user(savedUser.id);
+      let insuraces: Insurance[] = [];
+
+      try {
+        insuraces = await this.insuranceService.findAll_entities_by_user(savedUser.id);
+      } catch (error) {
+        return savedUser;
+      }
+
 
       let updated_insurances: Insurance[] = [];
 
@@ -222,10 +229,13 @@ export class UsersService {
     const user = await this.findOne(id);
     let vehicles: any[];
     let insurances: Insurance[] = [];
+    const address = await this.userAddressService.findUserAddress(user.id);
+    const telephone = await this.userTelephoneService.findUserTelephone(user.id);
 
     try {
       vehicles = await this.vehicleService.findAllVehiclesByUser(id);
       insurances = await this.insuranceService.findAll_by_user(id);
+      
     } catch (error) {
       if (error instanceof NotFoundException) {
         vehicles = [];
@@ -238,7 +248,9 @@ export class UsersService {
     return {
       ...user,
       vehicles,
-      insurances
+      insurances,
+      address,
+      telephone
     };
   }
 }

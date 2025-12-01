@@ -19,13 +19,6 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @SetRoutePolicy([RoutePolicies.admin])
-  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @Patch()
@@ -43,6 +36,13 @@ export class UsersController {
     return this.usersService.remove(+id);
   }
 
+  @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
+
   @UseGuards(AuthTokenGuard, RoutePolicyGuard)
   @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
   @Get('/me')
@@ -52,5 +52,11 @@ export class UsersController {
     // console.log(tokenPayloadParam);
     return this.usersService.me(tokenPayloadParam.sub);
   }
-}
 
+  @SetRoutePolicy([RoutePolicies.admin, RoutePolicies.user])
+  @UseGuards(AuthTokenGuard, RoutePolicyGuard)
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.usersService.me(id);
+  }
+}
